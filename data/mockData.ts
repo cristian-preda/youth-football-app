@@ -1,0 +1,612 @@
+import type {
+  User,
+  Club,
+  Team,
+  Player,
+  Event,
+  Message,
+  Chat,
+} from '../types';
+
+// ========== CLUBS ==========
+export const clubs: Club[] = [
+  {
+    id: 'club-1',
+    name: 'FC Steaua București Academy',
+    location: 'Baza Sportivă Steaua',
+    city: 'București',
+    founded: 1947,
+    teams: ['team-1', 'team-2', 'team-3'],
+    directorId: 'user-director-1',
+  },
+];
+
+// ========== TEAMS ==========
+export const teams: Team[] = [
+  {
+    id: 'team-1',
+    name: 'U9',
+    ageGroup: 'U9',
+    clubId: 'club-1',
+    coachId: 'user-coach-1',
+    playerIds: ['player-1', 'player-2', 'player-3', 'player-4', 'player-5', 'player-6', 'player-7', 'player-8'],
+    gender: 'boys',
+  },
+  {
+    id: 'team-2',
+    name: 'U11',
+    ageGroup: 'U11',
+    clubId: 'club-1',
+    coachId: 'user-coach-2',
+    playerIds: ['player-9', 'player-10'],
+    gender: 'boys',
+  },
+  {
+    id: 'team-3',
+    name: 'U13 Fete',
+    ageGroup: 'U13',
+    clubId: 'club-1',
+    coachId: 'user-coach-1',
+    playerIds: [],
+    gender: 'girls',
+  },
+];
+
+// ========== USERS ==========
+export const users: User[] = [
+  // Director
+  {
+    id: 'user-director-1',
+    name: 'Gheorghe Popescu',
+    email: 'g.popescu@steaua-academy.ro',
+    phone: '+40 721 234 567',
+    role: 'director',
+    clubId: 'club-1',
+  },
+  // Coaches
+  {
+    id: 'user-coach-1',
+    name: 'Mircea Ionescu',
+    email: 'mircea.ionescu@steaua-academy.ro',
+    phone: '+40 722 345 678',
+    role: 'coach',
+    clubId: 'club-1',
+    teamId: 'team-1',
+  },
+  {
+    id: 'user-coach-2',
+    name: 'Adrian Marinescu',
+    email: 'adrian.marinescu@steaua-academy.ro',
+    phone: '+40 723 456 789',
+    role: 'coach',
+    clubId: 'club-1',
+    teamId: 'team-2',
+  },
+  // Parents
+  {
+    id: 'user-parent-1',
+    name: 'Elena Stanciu',
+    email: 'elena.stanciu@gmail.com',
+    phone: '+40 724 567 890',
+    role: 'parent',
+    clubId: 'club-1',
+    childrenIds: ['player-1'],
+  },
+  {
+    id: 'user-parent-2',
+    name: 'Andrei Dumitrescu',
+    email: 'andrei.dumitrescu@gmail.com',
+    phone: '+40 725 678 901',
+    role: 'parent',
+    clubId: 'club-1',
+    childrenIds: ['player-2'],
+  },
+  {
+    id: 'user-parent-3',
+    name: 'Maria Popescu',
+    email: 'maria.popescu@gmail.com',
+    phone: '+40 726 789 012',
+    role: 'parent',
+    clubId: 'club-1',
+    childrenIds: ['player-3'],
+  },
+  {
+    id: 'user-parent-4',
+    name: 'Cristian Popa',
+    email: 'cristian.popa@gmail.com',
+    phone: '+40 727 890 123',
+    role: 'parent',
+    clubId: 'club-1',
+    childrenIds: ['player-4'],
+  },
+  {
+    id: 'user-parent-5',
+    name: 'Ana Munteanu',
+    email: 'ana.munteanu@gmail.com',
+    phone: '+40 728 901 234',
+    role: 'parent',
+    clubId: 'club-1',
+    childrenIds: ['player-5'],
+  },
+  // Players
+  {
+    id: 'player-1',
+    name: 'David Stanciu',
+    email: 'david.stanciu@elev.ro',
+    phone: '',
+    role: 'player',
+    clubId: 'club-1',
+    teamId: 'team-1',
+  },
+  {
+    id: 'player-2',
+    name: 'Andrei Dumitrescu Jr.',
+    email: '',
+    phone: '',
+    role: 'player',
+    clubId: 'club-1',
+    teamId: 'team-1',
+  },
+];
+
+// ========== PLAYERS ==========
+export const players: Player[] = [
+  {
+    id: 'player-1',
+    name: 'David Stanciu',
+    age: 9,
+    dateOfBirth: '2015-03-15',
+    position: 'Atacant',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 10,
+    parentIds: ['user-parent-1'],
+    stats: {
+      goals: 12,
+      assists: 8,
+      minutesPlayed: 540,
+      matchesPlayed: 8,
+      yellowCards: 1,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-2',
+    name: 'Alexandru Dumitrescu',
+    age: 9,
+    dateOfBirth: '2015-05-22',
+    position: 'Mijlocaș',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 8,
+    parentIds: ['user-parent-2'],
+    stats: {
+      goals: 5,
+      assists: 11,
+      minutesPlayed: 600,
+      matchesPlayed: 8,
+      yellowCards: 0,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-3',
+    name: 'Matei Popescu',
+    age: 8,
+    dateOfBirth: '2016-01-10',
+    position: 'Fundaș',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 4,
+    parentIds: ['user-parent-3'],
+    stats: {
+      goals: 1,
+      assists: 3,
+      minutesPlayed: 580,
+      matchesPlayed: 8,
+      yellowCards: 2,
+      redCards: 0,
+    },
+    medicalHistory: [
+      {
+        id: 'med-1',
+        playerId: 'player-3',
+        date: '2024-09-15',
+        type: 'injury',
+        description: 'Entorsă gleznă dreaptă',
+        severity: 'medium',
+        recoveryDate: '2024-10-01',
+        notes: 'Recuperare completă, poate reveni la antrenamente',
+      },
+    ],
+  },
+  {
+    id: 'player-4',
+    name: 'Radu Popa',
+    age: 9,
+    dateOfBirth: '2015-07-30',
+    position: 'Portar',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 1,
+    parentIds: ['user-parent-4'],
+    stats: {
+      goals: 0,
+      assists: 0,
+      minutesPlayed: 720,
+      matchesPlayed: 8,
+      yellowCards: 0,
+      redCards: 0,
+      cleanSheets: 3,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-5',
+    name: 'Ștefan Munteanu',
+    age: 8,
+    dateOfBirth: '2016-02-18',
+    position: 'Atacant',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 9,
+    parentIds: ['user-parent-5'],
+    stats: {
+      goals: 15,
+      assists: 4,
+      minutesPlayed: 520,
+      matchesPlayed: 7,
+      yellowCards: 0,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-6',
+    name: 'Luca Gheorghe',
+    age: 9,
+    dateOfBirth: '2015-04-12',
+    position: 'Mijlocaș',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 7,
+    parentIds: [],
+    stats: {
+      goals: 3,
+      assists: 6,
+      minutesPlayed: 450,
+      matchesPlayed: 6,
+      yellowCards: 1,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-7',
+    name: 'Denis Vasile',
+    age: 8,
+    dateOfBirth: '2016-06-20',
+    position: 'Fundaș',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 3,
+    parentIds: [],
+    stats: {
+      goals: 0,
+      assists: 2,
+      minutesPlayed: 480,
+      matchesPlayed: 6,
+      yellowCards: 0,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-8',
+    name: 'Gabriel Ionescu',
+    age: 9,
+    dateOfBirth: '2015-08-05',
+    position: 'Fundaș',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    jerseyNumber: 5,
+    parentIds: [],
+    stats: {
+      goals: 2,
+      assists: 1,
+      minutesPlayed: 500,
+      matchesPlayed: 7,
+      yellowCards: 1,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+];
+
+// ========== EVENTS ==========
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+const nextWeek = new Date(today);
+nextWeek.setDate(nextWeek.getDate() + 7);
+const lastWeek = new Date(today);
+lastWeek.setDate(lastWeek.getDate() - 7);
+
+export const events: Event[] = [
+  // Today's training
+  {
+    id: 'event-1',
+    type: 'training',
+    title: 'Antrenament U9',
+    date: today.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 1',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      {
+        id: 'att-1',
+        eventId: 'event-1',
+        playerId: 'player-1',
+        status: 'present',
+        checkInTime: '15:45',
+        markedBy: 'user-coach-1',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'att-2',
+        eventId: 'event-1',
+        playerId: 'player-2',
+        status: 'present',
+        checkInTime: '15:50',
+        markedBy: 'user-coach-1',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'att-3',
+        eventId: 'event-1',
+        playerId: 'player-3',
+        status: 'late',
+        checkInTime: '16:15',
+        markedBy: 'user-coach-1',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'att-4',
+        eventId: 'event-1',
+        playerId: 'player-4',
+        status: 'present',
+        checkInTime: '15:55',
+        markedBy: 'user-coach-1',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'att-5',
+        eventId: 'event-1',
+        playerId: 'player-5',
+        status: 'excused',
+        excuseReason: 'Vizită la medic',
+        excusedBy: 'user-parent-5',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'att-6',
+        eventId: 'event-1',
+        playerId: 'player-6',
+        status: 'pending',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'att-7',
+        eventId: 'event-1',
+        playerId: 'player-7',
+        status: 'present',
+        checkInTime: '16:00',
+        markedBy: 'user-coach-1',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+      {
+        id: 'att-8',
+        eventId: 'event-1',
+        playerId: 'player-8',
+        status: 'present',
+        checkInTime: '15:48',
+        markedBy: 'user-coach-1',
+        createdAt: today.toISOString(),
+        updatedAt: today.toISOString(),
+      },
+    ],
+    notificationSent: true,
+    notes: 'Focusăm pe pase scurte și control',
+  },
+  // Tomorrow's match
+  {
+    id: 'event-2',
+    type: 'match',
+    title: 'Meci U9 vs Dinamo Academy',
+    date: tomorrow.toISOString().split('T')[0],
+    startTime: '10:00',
+    duration: 60,
+    location: 'Stadionul Steaua',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    matchDetails: {
+      opponent: 'Dinamo Academy U9',
+      isHome: true,
+    },
+    notificationSent: true,
+    notes: 'Prezentare cu 30 minute înainte de meci. Echipament complet.',
+  },
+  // Next week training
+  {
+    id: 'event-3',
+    type: 'training',
+    title: 'Antrenament U9',
+    date: nextWeek.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 2',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    notificationSent: false,
+  },
+  // Last week's completed match
+  {
+    id: 'event-4',
+    type: 'match',
+    title: 'Meci U9 vs Rapid Academy',
+    date: lastWeek.toISOString().split('T')[0],
+    startTime: '11:00',
+    duration: 60,
+    location: 'Stadionul Rapid',
+    address: 'Str. Giulești, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      {
+        id: 'att-past-1',
+        eventId: 'event-4',
+        playerId: 'player-1',
+        status: 'present',
+        markedBy: 'user-coach-1',
+        createdAt: lastWeek.toISOString(),
+        updatedAt: lastWeek.toISOString(),
+      },
+    ],
+    matchDetails: {
+      opponent: 'Rapid Academy U9',
+      isHome: false,
+      score: {
+        team: 3,
+        opponent: 2,
+      },
+      result: 'win',
+      goalScorers: [
+        { playerId: 'player-1', minute: 15, assistedBy: 'player-2' },
+        { playerId: 'player-5', minute: 28 },
+        { playerId: 'player-1', minute: 45, assistedBy: 'player-2' },
+      ],
+    },
+    notificationSent: true,
+  },
+];
+
+// ========== CHATS ==========
+export const chats: Chat[] = [
+  {
+    id: 'chat-1',
+    name: 'Echipa U9 - Părinți & Antrenor',
+    type: 'group',
+    participants: ['user-coach-1', 'user-parent-1', 'user-parent-2', 'user-parent-3', 'user-parent-4', 'user-parent-5'],
+    teamId: 'team-1',
+    clubId: 'club-1',
+    pinned: true,
+    createdAt: '2024-09-01T10:00:00Z',
+  },
+  {
+    id: 'chat-2',
+    name: 'Antrenori Steaua',
+    type: 'group',
+    participants: ['user-coach-1', 'user-coach-2', 'user-director-1'],
+    clubId: 'club-1',
+    pinned: false,
+    createdAt: '2024-09-01T10:00:00Z',
+  },
+  {
+    id: 'chat-3',
+    name: 'Elena Stanciu',
+    type: 'direct',
+    participants: ['user-coach-1', 'user-parent-1'],
+    clubId: 'club-1',
+    pinned: false,
+    createdAt: '2024-09-15T14:30:00Z',
+  },
+];
+
+// ========== MESSAGES ==========
+const now = new Date();
+const twoMinAgo = new Date(now.getTime() - 2 * 60000);
+const fiveMinAgo = new Date(now.getTime() - 5 * 60000);
+const tenMinAgo = new Date(now.getTime() - 10 * 60000);
+const fifteenMinAgo = new Date(now.getTime() - 15 * 60000);
+
+export const messages: Message[] = [
+  {
+    id: 'msg-1',
+    from: 'user-coach-1',
+    to: ['user-parent-1', 'user-parent-2', 'user-parent-3', 'user-parent-4', 'user-parent-5'],
+    content: 'Bună ziua! Vă rog să confirmați prezența copiilor la meciul de mâine, ora 10:00.',
+    timestamp: fifteenMinAgo.toISOString(),
+    chatId: 'chat-1',
+    read: false,
+    type: 'group_announcement',
+  },
+  {
+    id: 'msg-2',
+    from: 'user-parent-1',
+    to: ['user-coach-1'],
+    content: 'Bună ziua! David va fi prezent. Mulțumim!',
+    timestamp: tenMinAgo.toISOString(),
+    chatId: 'chat-1',
+    read: true,
+    type: 'direct',
+  },
+  {
+    id: 'msg-3',
+    from: 'user-parent-2',
+    to: ['user-coach-1'],
+    content: 'Alexandru va fi acolo. Ne vedem mâine! 👍',
+    timestamp: fiveMinAgo.toISOString(),
+    chatId: 'chat-1',
+    read: true,
+    type: 'direct',
+  },
+  {
+    id: 'msg-4',
+    from: 'user-coach-1',
+    to: ['user-parent-1', 'user-parent-2', 'user-parent-3', 'user-parent-4', 'user-parent-5'],
+    content: 'Perfect! Vă rog să aveți echipamentul complet (tricou, pantaloni, jambiere, ghete).',
+    timestamp: twoMinAgo.toISOString(),
+    chatId: 'chat-1',
+    read: false,
+    type: 'group_announcement',
+  },
+];
+
+// Helper functions to get data by ID
+export const getUserById = (id: string): User | undefined => users.find(u => u.id === id);
+export const getClubById = (id: string): Club | undefined => clubs.find(c => c.id === id);
+export const getTeamById = (id: string): Team | undefined => teams.find(t => t.id === id);
+export const getPlayerById = (id: string): Player | undefined => players.find(p => p.id === id);
+export const getEventById = (id: string): Event | undefined => events.find(e => e.id === id);
+export const getChatById = (id: string): Chat | undefined => chats.find(c => c.id === id);
+
+// Helper functions to get related data
+export const getTeamsByClubId = (clubId: string): Team[] => teams.filter(t => t.clubId === clubId);
+export const getPlayersByTeamId = (teamId: string): Player[] => players.filter(p => p.teamId === teamId);
+export const getEventsByTeamId = (teamId: string): Event[] => events.filter(e => e.teamId === teamId);
+export const getMessagesByChatId = (chatId: string): Message[] => messages.filter(m => m.chatId === chatId);
+export const getChildrenByParentId = (parentId: string): Player[] => {
+  const user = getUserById(parentId);
+  if (!user || !user.childrenIds) return [];
+  return players.filter(p => user.childrenIds?.includes(p.id));
+};
