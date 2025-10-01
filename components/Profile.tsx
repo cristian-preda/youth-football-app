@@ -136,8 +136,8 @@ export function Profile() {
             <span className="font-medium">{club?.city}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Adresă:</span>
-            <span className="font-medium text-right">{club?.address}</span>
+            <span className="text-muted-foreground">Locație:</span>
+            <span className="font-medium text-right">{club?.location}</span>
           </div>
         </div>
       </Card>

@@ -2,7 +2,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Calendar, Clock, MapPin, Users, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { getTeamById, getEventsByTeamId, getPlayersByTeamId } from '../data/mockData';
 import type { Event } from '../types';
 

@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Send, Search, Plus, Pin, Users as UsersIcon, ArrowLeft, MoreVertical } from 'lucide-react';
-import { chats, messages as allMessages, getMessagesByChatId, getUserById } from '../data/mockData';
+import { chats, getMessagesByChatId, getUserById } from '../data/mockData';
 
 export function Messages() {
   const { currentUser } = useAuth();

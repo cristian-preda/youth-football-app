@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BottomNav } from './components/BottomNav';
 import { Dashboard } from './components/Dashboard';
@@ -49,11 +50,34 @@ function AppContent() {
     }
   };
 
+  const pageVariants = {
+    initial: { opacity: 0, x: -20 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: 20 }
+  };
+
+  const pageTransition = {
+    type: "tween" as const,
+    ease: [0.22, 1, 0.36, 1] as const,
+    duration: 0.3
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Main Content */}
       <main className="p-4 pb-20 max-w-md mx-auto">
-        {renderActiveTab()}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            transition={pageTransition}
+          >
+            {renderActiveTab()}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation */}
