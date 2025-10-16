@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- ABOUTME: PWA icon source - simple football/soccer theme for youth football app -->
+  <rect width="512" height="512" fill="#22c55e" rx="64"/>
+  <circle cx="256" cy="256" r="180" fill="white"/>
+  <g stroke="#22c55e" stroke-width="8" fill="none">
+    <polygon points="256,120 220,180 170,180 180,230 220,260"/>
+    <polygon points="256,120 292,180 342,180 332,230 292,260"/>
+    <polygon points="220,260 180,310 200,370 256,370"/>
+    <polygon points="292,260 332,310 312,370 256,370"/>
+    <circle cx="256" cy="256" r="180" stroke-width="6"/>
+  </g>
+  <text x="256" y="440" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">YFA</text>
+</svg>
+
