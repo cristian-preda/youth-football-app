@@ -1,5 +1,6 @@
-import { Home, Calendar, Users, MessageSquare, Trophy } from 'lucide-react';
+import { Home, Calendar, Users, MessageSquare, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 
 interface BottomNavProps {
   activeTab: string;
@@ -7,13 +8,23 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
-  const tabs = [
-    { id: 'news', label: 'Acasă', icon: Home },
-    { id: 'schedule', label: 'Program', icon: Calendar },
-    { id: 'team', label: 'Echipa', icon: Users },
-    { id: 'messages', label: 'Mesaje', icon: MessageSquare },
-    { id: 'club', label: 'Club', icon: Trophy },
+  const { currentUser } = useAuth();
+
+  // Base tabs always visible
+  const baseTabs = [
+    { id: 'news', label: 'Acasă', icon: Home, requiresAuth: false },
   ];
+
+  // Authenticated tabs (only show when user is logged in)
+  const authTabs = currentUser ? [
+    { id: 'schedule', label: 'Program', icon: Calendar, requiresAuth: true },
+    { id: 'team', label: 'Echipa', icon: Users, requiresAuth: true },
+    { id: 'messages', label: 'Mesaje', icon: MessageSquare, requiresAuth: true },
+    { id: 'club', label: 'Club', icon: Trophy, requiresAuth: true },
+    { id: 'profile', label: 'Profil', icon: User, requiresAuth: true },
+  ] : [];
+
+  const tabs = [...baseTabs, ...authTabs];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>

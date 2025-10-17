@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { X, Save, Plus, Minus, Target, AlertTriangle, Clock } from 'lucide-react';
+import { Save, Plus, Minus, Target, AlertTriangle, Clock, X } from 'lucide-react';
 import { getPlayersByTeamId, getPlayerById } from '../data/mockData';
+import { NavigationHeader } from './NavigationHeader';
 import type { Event, Card as CardType, PlayerMatchStats, GoalScorer } from '../types';
 
 interface MatchResultFormProps {
@@ -51,6 +52,16 @@ export function MatchResultForm({ event, onClose, onSave }: MatchResultFormProps
 
   // UI State
   const [activeSection, setActiveSection] = useState<'score' | 'goals' | 'cards' | 'minutes'>('score');
+
+  // Swipe to close gesture
+  const x = useMotionValue(0);
+  const opacity = useTransform(x, [0, 300], [1, 0]);
+
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.x > 150) {
+      onClose();
+    }
+  };
 
   // Only coaches can access this form
   if (currentUser?.role !== 'coach') {
@@ -129,18 +140,40 @@ export function MatchResultForm({ event, onClose, onSave }: MatchResultFormProps
     cards.filter(c => c.playerId === playerId && c.type === type).length;
 
   return (
-    <div className="fixed inset-0 bg-background z-50 overflow-y-auto pb-20">
-      <div className="p-4 space-y-4">
+    <motion.div
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '100%' }}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 30,
+      }}
+      className="fixed inset-0 bg-background z-50 overflow-y-auto pb-20"
+      style={{ x, opacity }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 300 }}
+      dragElastic={0.2}
+      onDragEnd={handleDragEnd}
+    >
+      {/* Swipe Indicator */}
+      <div className="absolute top-16 left-2 w-1 h-12 bg-muted-foreground/20 rounded-full pointer-events-none z-50" />
+
+      <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between sticky top-0 bg-background py-2 z-10">
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="w-5 h-5" />
-          </Button>
-          <h2>Adaugă Rezultat</h2>
-          <Button variant="ghost" size="icon" onClick={handleSave}>
-            <Save className="w-5 h-5 text-primary" />
-          </Button>
-        </div>
+        <NavigationHeader
+          title="Adaugă Rezultat"
+          subtitle={event.matchDetails?.opponent}
+          onBack={onClose}
+          variant="close"
+          rightAction={
+            <Button variant="ghost" size="icon" onClick={handleSave}>
+              <Save className="w-5 h-5 text-primary" />
+            </Button>
+          }
+        />
+
+        <div className="p-4 space-y-4">
 
         {/* Match Info */}
         <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
@@ -492,13 +525,14 @@ export function MatchResultForm({ event, onClose, onSave }: MatchResultFormProps
         )}
 
         {/* Save Button (Sticky Bottom) */}
-        <div className="sticky bottom-0 bg-background pt-4 pb-2">
+        <div className="p-4 sticky bottom-0 bg-background pt-4 pb-2">
           <Button className="w-full" size="lg" onClick={handleSave}>
             <Save className="w-4 h-4 mr-2" />
             Salvează rezultatul
           </Button>
         </div>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

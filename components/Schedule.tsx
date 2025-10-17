@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Calendar, Clock, MapPin, Plus, CheckCircle2, AlertCircle, List, CalendarDays, Bell, X, Save, Edit, Share2, Trash2, MapPinIcon, Trophy, Target } from 'lucide-react';
+import { Calendar, Clock, MapPin, Plus, CheckCircle2, AlertCircle, List, CalendarDays, Bell, Save, Edit, Share2, Trash2, MapPinIcon, Trophy, Target, X } from 'lucide-react';
 import { getTeamById, getEventsByTeamId, getPlayersByTeamId, getPlayerById, getChildrenByParentId } from '../data/mockData';
 import { MatchResultForm, type MatchResultData } from './MatchResultForm';
 import { AttendanceConfirmation } from './AttendanceConfirmation';
+import { NavigationHeader } from './NavigationHeader';
 import type { Event } from '../types';
 
 type ViewMode = 'list' | 'calendar';
@@ -156,37 +157,71 @@ export function Schedule() {
   // Match Result Form
   if (showMatchResultForm && selectedEvent) {
     return (
-      <MatchResultForm
-        event={selectedEvent}
-        onClose={() => setShowMatchResultForm(false)}
-        onSave={handleMatchResultSave}
-      />
+      <AnimatePresence>
+        <MatchResultForm
+          event={selectedEvent}
+          onClose={() => setShowMatchResultForm(false)}
+          onSave={handleMatchResultSave}
+        />
+      </AnimatePresence>
     );
   }
 
-  // Event Detail Modal
+  // Event Detail Modal - with swipe gesture
   if (showEventDetail && selectedEvent) {
     const isPast = isPastEvent(selectedEvent);
     const isToday = formatDate(selectedEvent.date) === 'Astăzi';
     const isMatch = selectedEvent.type === 'match';
     const attendance = getAttendanceCount(selectedEvent);
 
+    const x = useMotionValue(0);
+    const opacity = useTransform(x, [0, 300], [1, 0]);
+
+    const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (info.offset.x > 150) {
+        setShowEventDetail(false);
+        setSelectedEvent(null);
+      }
+    };
+
     return (
-      <div className="fixed inset-0 bg-background z-50 overflow-y-auto pb-20">
-        <div className="p-4 space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" onClick={() => { setShowEventDetail(false); setSelectedEvent(null); }}>
-              <X className="w-5 h-5" />
-            </Button>
-            <h2>{isPast && isMatch ? 'Rezultat Meci' : 'Detalii Eveniment'}</h2>
-            {currentUser.role === 'coach' && (
-              <Button variant="ghost" size="icon">
-                <Edit className="w-5 h-5" />
-              </Button>
-            )}
-            {currentUser.role !== 'coach' && <div className="w-10" />}
-          </div>
+      <AnimatePresence>
+        <motion.div
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{
+            type: 'spring',
+            stiffness: 300,
+            damping: 30,
+          }}
+          className="fixed inset-0 bg-background z-50 overflow-y-auto pb-20"
+          style={{ x, opacity }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 300 }}
+          dragElastic={0.2}
+          onDragEnd={handleDragEnd}
+        >
+          {/* Swipe Indicator */}
+          <div className="absolute top-16 left-2 w-1 h-12 bg-muted-foreground/20 rounded-full pointer-events-none z-50" />
+
+          <div className="space-y-4">
+            {/* Header */}
+            <NavigationHeader
+              title={isPast && isMatch ? 'Rezultat Meci' : 'Detalii Eveniment'}
+              subtitle={formatDate(selectedEvent.date)}
+              onBack={() => { setShowEventDetail(false); setSelectedEvent(null); }}
+              variant="close"
+              rightAction={
+                currentUser.role === 'coach' ? (
+                  <Button variant="ghost" size="icon">
+                    <Edit className="w-5 h-5" />
+                  </Button>
+                ) : undefined
+              }
+            />
+
+            <div className="p-4 space-y-4">
 
           {/* Event Info Card */}
           <Card className="p-4">
@@ -400,8 +435,10 @@ export function Schedule() {
               </Button>
             )}
           </div>
+          </div>
         </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     );
   }
 

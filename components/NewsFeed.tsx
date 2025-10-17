@@ -10,15 +10,15 @@ import type { NewsPost } from '../types';
 
 interface NewsFeedProps {
   onNavigate?: (tab: string) => void;
+  onRequestLogin?: () => void;
 }
 
-export function NewsFeed({ onNavigate }: NewsFeedProps) {
+export function NewsFeed({ onNavigate, onRequestLogin }: NewsFeedProps) {
   const { currentUser } = useAuth();
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
-  if (!currentUser) return null;
-
-  const club = clubs.find(c => c.id === currentUser.clubId);
+  // Public page - works without authentication
+  const club = currentUser ? clubs.find(c => c.id === currentUser.clubId) : clubs[0];
 
   // TODO: This will come from mockData - for now, hardcoded sample news
   const newsPosts: NewsPost[] = [
@@ -151,6 +151,29 @@ export function NewsFeed({ onNavigate }: NewsFeedProps) {
         <p className="text-muted-foreground">Ultimele știri de la {club?.name}</p>
       </motion.div>
 
+      {/* Login CTA (for non-authenticated users) */}
+      {!currentUser && onRequestLogin && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <div className="text-center">
+              <Trophy className="w-12 h-12 mx-auto mb-3 text-primary" />
+              <h2 className="mb-2">Alătură-te echipei!</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Conectează-te pentru acces complet la program, echipă și mesaje
+              </p>
+              <Button onClick={onRequestLogin} size="lg" className="w-full">
+                <Users className="w-4 h-4 mr-2" />
+                Alege Rolul Tău
+              </Button>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
       {/* Club Info Card */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -214,7 +237,7 @@ export function NewsFeed({ onNavigate }: NewsFeedProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2>Știri recente</h2>
-          {currentUser.role === 'coach' && (
+          {currentUser?.role === 'coach' && (
             <Button variant="ghost" size="sm">
               + Postare nouă
             </Button>
@@ -290,17 +313,31 @@ export function NewsFeed({ onNavigate }: NewsFeedProps) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 1 }}
       >
-        <Card className="p-6 text-center bg-muted/30">
-          <Calendar className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-          <h3 className="mb-2">Vezi programul complet</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Verifică meciurile și antrenamentele viitoare
-          </p>
-          <Button onClick={() => onNavigate?.('schedule')}>
-            <Calendar className="w-4 h-4 mr-2" />
-            Vezi Programul
-          </Button>
-        </Card>
+        {currentUser ? (
+          <Card className="p-6 text-center bg-muted/30">
+            <Calendar className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+            <h3 className="mb-2">Vezi programul complet</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Verifică meciurile și antrenamentele viitoare
+            </p>
+            <Button onClick={() => onNavigate?.('schedule')}>
+              <Calendar className="w-4 h-4 mr-2" />
+              Vezi Programul
+            </Button>
+          </Card>
+        ) : (
+          <Card className="p-6 text-center bg-primary/5 border-primary/20">
+            <Users className="w-12 h-12 mx-auto mb-3 text-primary" />
+            <h3 className="mb-2">Descoperă mai multe</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Conectează-te pentru acces la program, echipă și statistici complete
+            </p>
+            <Button onClick={onRequestLogin} variant="default" size="lg">
+              <Users className="w-4 h-4 mr-2" />
+              Începe Acum
+            </Button>
+          </Card>
+        )}
       </motion.div>
     </div>
   );
