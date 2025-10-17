@@ -11,6 +11,7 @@ import { MessagesSimplified as Messages } from './components/MessagesSimplified'
 import { Profile } from './components/Profile';
 import { PlayerRoster } from './components/PlayerRoster';
 import { Onboarding } from './components/Onboarding';
+import { MyKid } from './components/MyKid';
 import { users } from './data/mockData';
 import type { UserRole } from './types';
 
@@ -18,6 +19,7 @@ function AppContent() {
   const { currentUser, login, completeOnboarding } = useAuth();
   const [activeTab, setActiveTab] = useState('news');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
   // Handle onboarding completion
   const handleOnboardingComplete = (selectedRole: UserRole) => {
@@ -27,8 +29,12 @@ function AppContent() {
       login(mockUser.id);
       completeOnboarding();
       setShowOnboarding(false);
-      // Navigate to team page after login
-      setActiveTab('team');
+      // Navigate to appropriate page based on role
+      if (selectedRole === 'parent') {
+        setActiveTab('my-kid');
+      } else {
+        setActiveTab('team');
+      }
     }
   };
 
@@ -37,27 +43,40 @@ function AppContent() {
     return <Onboarding onComplete={handleOnboardingComplete} />;
   }
 
+  const handleNavigate = (tab: string, playerId?: string) => {
+    setActiveTab(tab);
+    if (playerId) {
+      setSelectedPlayerId(playerId);
+    } else {
+      setSelectedPlayerId(null);
+    }
+  };
+
   const renderActiveTab = () => {
     switch (activeTab) {
       case 'news':
         // News feed is public - pass login handler
-        return <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'schedule':
-        return currentUser ? <Schedule /> : <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return currentUser ? <Schedule /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
+      case 'add-event':
+        return currentUser ? <Schedule openCreateForm={true} /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'team':
-        return currentUser ? <Dashboard onNavigate={setActiveTab} /> : <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return currentUser ? <Dashboard onNavigate={handleNavigate} /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
+      case 'my-kid':
+        return currentUser ? <MyKid /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'messages':
-        return currentUser ? <Messages /> : <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return currentUser ? <Messages /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'club':
-        return currentUser ? <ClubStandings onNavigate={setActiveTab} /> : <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return currentUser ? <ClubStandings onNavigate={handleNavigate} /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'profile':
-        return currentUser ? <Profile /> : <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return currentUser ? <Profile /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'attendance':
-        return currentUser ? <Attendance /> : <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return currentUser ? <Attendance /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'players':
-        return currentUser ? <PlayerRoster /> : <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return currentUser ? <PlayerRoster initialPlayerId={selectedPlayerId || undefined} /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       default:
-        return <NewsFeed onNavigate={setActiveTab} onRequestLogin={() => setShowOnboarding(true)} />;
+        return <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
     }
   };
 

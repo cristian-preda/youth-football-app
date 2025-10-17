@@ -30,7 +30,11 @@ import type { Player } from '../types';
 
 type SortOption = 'name' | 'position' | 'goals' | 'assists' | 'matches';
 
-export function PlayerRoster() {
+interface PlayerRosterProps {
+  initialPlayerId?: string;
+}
+
+export function PlayerRoster({ initialPlayerId }: PlayerRosterProps = {}) {
   const { currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
@@ -47,6 +51,14 @@ export function PlayerRoster() {
   const teamId = currentUser.teamId || 'team-1';
   const team = getTeamById(teamId);
   const teamPlayers = team ? getPlayersByTeamId(team.id) : [];
+
+  // If initialPlayerId is provided, set that player as selected
+  if (initialPlayerId && !selectedPlayer) {
+    const player = teamPlayers.find(p => p.id === initialPlayerId);
+    if (player) {
+      setSelectedPlayer(player);
+    }
+  }
 
   const positions = ['Portar', 'Fundaș', 'Mijlocaș', 'Atacant'];
 

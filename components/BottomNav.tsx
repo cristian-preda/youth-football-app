@@ -1,4 +1,4 @@
-import { Home, Calendar, Users, MessageSquare, Trophy, User } from 'lucide-react';
+import { Home, Calendar, Users, MessageSquare, Trophy, User, Baby } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,14 +15,30 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     { id: 'news', label: 'Acasă', icon: Home, requiresAuth: false },
   ];
 
-  // Authenticated tabs (only show when user is logged in)
-  const authTabs = currentUser ? [
+  // Parent-specific tabs
+  const parentTabs = [
+    { id: 'schedule', label: 'Program', icon: Calendar, requiresAuth: true },
+    { id: 'my-kid', label: 'Copilul meu', icon: Baby, requiresAuth: true },
+    { id: 'messages', label: 'Mesaje', icon: MessageSquare, requiresAuth: true },
+    { id: 'club', label: 'Club', icon: Trophy, requiresAuth: true },
+    { id: 'profile', label: 'Profil', icon: User, requiresAuth: true },
+  ];
+
+  // Default authenticated tabs (for coach, director, player)
+  const defaultAuthTabs = [
     { id: 'schedule', label: 'Program', icon: Calendar, requiresAuth: true },
     { id: 'team', label: 'Echipa', icon: Users, requiresAuth: true },
     { id: 'messages', label: 'Mesaje', icon: MessageSquare, requiresAuth: true },
     { id: 'club', label: 'Club', icon: Trophy, requiresAuth: true },
     { id: 'profile', label: 'Profil', icon: User, requiresAuth: true },
-  ] : [];
+  ];
+
+  // Determine which tabs to show based on user role
+  const authTabs = currentUser
+    ? currentUser.role === 'parent'
+      ? parentTabs
+      : defaultAuthTabs
+    : [];
 
   const tabs = [...baseTabs, ...authTabs];
 

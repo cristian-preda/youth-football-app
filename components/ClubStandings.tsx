@@ -5,7 +5,7 @@ import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Trophy, Shield, Calendar, MapPin, Users as UsersIcon, Award } from 'lucide-react';
-import { clubs, teams } from '../data/mockData';
+import { clubs, teams, getChildrenByParentId } from '../data/mockData';
 import type { LeagueStandings } from '../types';
 
 interface ClubStandingsProps {
@@ -20,6 +20,15 @@ export function ClubStandings({ onNavigate }: ClubStandingsProps) {
 
   const club = clubs.find(c => c.id === currentUser.clubId);
   const clubTeams = teams.filter(t => t.clubId === currentUser.clubId);
+
+  // Determine the team to highlight based on user role
+  let highlightTeamId: string | undefined;
+  if (currentUser.role === 'parent') {
+    const children = getChildrenByParentId(currentUser.id);
+    highlightTeamId = children[0]?.teamId; // For MVP, focus on first child's team
+  } else {
+    highlightTeamId = currentUser.teamId;
+  }
 
   // TODO: This will come from mockData - for now, hardcoded sample standings
   const leagueStandings: Record<string, LeagueStandings> = {
@@ -100,7 +109,7 @@ export function ClubStandings({ onNavigate }: ClubStandingsProps) {
   };
 
   const standings = leagueStandings[selectedAgeGroup];
-  const userTeam = standings?.standings.find(s => s.teamId === currentUser.teamId);
+  const userTeam = standings?.standings.find(s => s.teamId === highlightTeamId);
 
   const getPositionColor = (position: number) => {
     if (position === 1) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -167,7 +176,9 @@ export function ClubStandings({ onNavigate }: ClubStandingsProps) {
             <div className="pt-4 border-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Echipa ta</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {currentUser.role === 'parent' ? 'Echipa copilului tău' : 'Echipa ta'}
+                  </p>
                   <p className="font-semibold">{userTeam.teamName}</p>
                 </div>
                 <Badge variant="outline" className={getPositionColor(userTeam.position)}>
@@ -254,7 +265,7 @@ export function ClubStandings({ onNavigate }: ClubStandingsProps) {
           {/* Table Rows */}
           <div className="space-y-2">
             {standings.standings.map((team, index) => {
-              const isUserTeam = team.teamId === currentUser.teamId;
+              const isUserTeam = team.teamId === highlightTeamId;
 
               return (
                 <motion.div
@@ -283,7 +294,7 @@ export function ClubStandings({ onNavigate }: ClubStandingsProps) {
                           {team.teamName}
                           {isUserTeam && (
                             <Badge variant="outline" className="ml-2 text-xs bg-primary/10 border-primary">
-                              Tu
+                              {currentUser.role === 'parent' ? 'Copil' : 'Tu'}
                             </Badge>
                           )}
                         </div>

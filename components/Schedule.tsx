@@ -16,11 +16,15 @@ import type { Event } from '../types';
 type ViewMode = 'list' | 'calendar';
 type FilterMode = 'all' | 'today' | 'upcoming' | 'past';
 
-export function Schedule() {
+interface ScheduleProps {
+  openCreateForm?: boolean;
+}
+
+export function Schedule({ openCreateForm = false }: ScheduleProps = {}) {
   const { currentUser } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(openCreateForm);
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);

@@ -3,8 +3,8 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { LogOut, Users, Trophy, Mail, Phone } from 'lucide-react';
-import { getTeamById, getPlayersByTeamId, clubs } from '../data/mockData';
+import { LogOut, Users, Trophy, Mail, Phone, Baby } from 'lucide-react';
+import { getTeamById, getPlayersByTeamId, clubs, getChildrenByParentId, getUserById } from '../data/mockData';
 
 export function Profile() {
   const { currentUser, logout } = useAuth();
@@ -14,6 +14,12 @@ export function Profile() {
   const team = currentUser.teamId ? getTeamById(currentUser.teamId) : null;
   const teamPlayers = team ? getPlayersByTeamId(team.id) : [];
   const club = clubs.find(c => c.id === currentUser.clubId);
+
+  // Parent-specific data
+  const children = currentUser.role === 'parent' ? getChildrenByParentId(currentUser.id) : [];
+  const child = children[0]; // For MVP, focus on first child
+  const childTeam = child ? getTeamById(child.teamId) : null;
+  const childCoach = childTeam ? getUserById(childTeam.coachId) : null;
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -59,9 +65,14 @@ export function Profile() {
             <Badge variant="secondary" className="mb-2">
               {getRoleLabel(currentUser.role)}
             </Badge>
-            {team && (
+            {team && currentUser.role !== 'parent' && (
               <p className="text-sm text-muted-foreground">
                 Echipa {team.name}
+              </p>
+            )}
+            {currentUser.role === 'parent' && child && (
+              <p className="text-sm text-muted-foreground">
+                Părinte al lui {child.name}
               </p>
             )}
           </div>
@@ -115,6 +126,40 @@ export function Profile() {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Locație:</span>
               <span className="font-medium">{club?.city}</span>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Child Info for Parents */}
+      {currentUser.role === 'parent' && child && childTeam && (
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Baby className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3>Informații copil</h3>
+              <p className="text-sm text-muted-foreground">{child.name}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Echipa:</span>
+              <span className="font-medium">{childTeam.name}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Poziție:</span>
+              <span className="font-medium">{child.position}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Număr:</span>
+              <span className="font-medium">#{child.jerseyNumber}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Antrenor:</span>
+              <span className="font-medium">{childCoach?.name}</span>
             </div>
           </div>
         </Card>
