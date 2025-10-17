@@ -65,7 +65,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Main Content */}
-      <main className="p-4 pb-20 max-w-md mx-auto">
+      <main className="p-4 pb-20 max-w-md mx-auto" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
