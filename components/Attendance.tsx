@@ -29,7 +29,6 @@ import {
   getPlayersByTeamId,
   getEventsByTeamId,
   events as allEvents,
-  getPlayerById,
 } from '../data/mockData';
 import type { AttendanceStatus, Player } from '../types';
 

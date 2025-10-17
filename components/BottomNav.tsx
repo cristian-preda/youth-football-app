@@ -1,4 +1,4 @@
-import { Home, Calendar, Users, MessageSquare, User } from 'lucide-react';
+import { Home, Calendar, Users, MessageSquare, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface BottomNavProps {
@@ -8,11 +8,11 @@ interface BottomNavProps {
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
-    { id: 'dashboard', label: 'Acasă', icon: Home },
+    { id: 'news', label: 'Acasă', icon: Home },
     { id: 'schedule', label: 'Program', icon: Calendar },
-    { id: 'attendance', label: 'Prezență', icon: Users },
+    { id: 'team', label: 'Echipa', icon: Users },
     { id: 'messages', label: 'Mesaje', icon: MessageSquare },
-    { id: 'profile', label: 'Profil', icon: User },
+    { id: 'club', label: 'Club', icon: Trophy },
   ];
 
   return (

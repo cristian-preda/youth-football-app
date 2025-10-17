@@ -119,6 +119,8 @@ export interface MatchDetails {
   goalScorers?: GoalScorer[];
   assists?: string[]; // Player IDs
   result?: 'win' | 'draw' | 'loss';
+  cards?: Card[]; // Yellow and red cards
+  playerStats?: PlayerMatchStats[]; // Detailed stats per player
 }
 
 export interface Substitution {
@@ -131,6 +133,21 @@ export interface GoalScorer {
   playerId: string;
   minute: number;
   assistedBy?: string; // Player ID
+}
+
+export interface Card {
+  playerId: string;
+  minute: number;
+  type: 'yellow' | 'red';
+}
+
+export interface PlayerMatchStats {
+  playerId: string;
+  minutesPlayed: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
 }
 
 export interface Message {
@@ -165,6 +182,58 @@ export interface Notification {
   link?: string;
   read: boolean;
   createdAt: string;
+}
+
+// News & Feed Types
+export type NewsPostType = 'match_result' | 'announcement' | 'training_update' | 'player_highlight';
+
+export interface NewsPost {
+  id: string;
+  type: NewsPostType;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  clubId: string;
+  teamId?: string; // Optional: specific team or club-wide
+  createdBy: string; // User ID
+  createdAt: string;
+  eventId?: string; // Link to event if match result
+  likes?: string[]; // User IDs who liked (future)
+  pinned?: boolean;
+}
+
+// League/Standings Types
+export interface TeamStanding {
+  teamId: string;
+  teamName: string;
+  position: number;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+export interface LeagueStandings {
+  id: string;
+  leagueName: string;
+  season: string;
+  ageGroup: string;
+  standings: TeamStanding[];
+  lastUpdated: string;
+}
+
+// Parent Attendance Confirmation
+export interface AttendanceConfirmationStatus {
+  eventId: string;
+  playerId: string;
+  parentId: string;
+  status: 'confirmed' | 'declined' | 'late' | 'pending';
+  confirmedAt?: string;
+  notes?: string;
 }
 
 // UI State Types

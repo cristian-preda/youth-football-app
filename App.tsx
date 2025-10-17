@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BottomNav } from './components/BottomNav';
 import { Dashboard } from './components/Dashboard';
+import { NewsFeed } from './components/NewsFeed';
+import { ClubStandings } from './components/ClubStandings';
 import { Schedule } from './components/Schedule';
 import { Attendance } from './components/Attendance';
 import { Messages } from './components/Messages';
@@ -14,7 +16,7 @@ import type { UserRole } from './types';
 
 function AppContent() {
   const { currentUser, isOnboarded, login, completeOnboarding } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('news');
 
   // Handle onboarding completion
   const handleOnboardingComplete = (selectedRole: UserRole) => {
@@ -33,20 +35,24 @@ function AppContent() {
 
   const renderActiveTab = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard onNavigate={setActiveTab} />;
+      case 'news':
+        return <NewsFeed onNavigate={setActiveTab} />;
       case 'schedule':
         return <Schedule />;
-      case 'attendance':
-        return <Attendance />;
+      case 'team':
+        return <Dashboard onNavigate={setActiveTab} />;
       case 'messages':
         return <Messages />;
+      case 'club':
+        return <ClubStandings onNavigate={setActiveTab} />;
+      case 'attendance':
+        return <Attendance />;
       case 'profile':
         return <Profile />;
       case 'players':
         return <PlayerRoster />;
       default:
-        return <Dashboard onNavigate={setActiveTab} />;
+        return <NewsFeed onNavigate={setActiveTab} />;
     }
   };
 
