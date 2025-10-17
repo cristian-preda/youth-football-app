@@ -1,13 +1,24 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Calendar, Clock, MapPin, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Calendar, Clock, MapPin, Plus, CheckCircle2, AlertCircle, List, CalendarDays, Bell, X, Save } from 'lucide-react';
 import { getTeamById, getEventsByTeamId, getPlayersByTeamId } from '../data/mockData';
 import type { Event } from '../types';
 
+type ViewMode = 'list' | 'calendar';
+type FilterMode = 'all' | 'today' | 'upcoming' | 'past';
+
 export function Schedule() {
   const { currentUser } = useAuth();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [filterMode, setFilterMode] = useState<FilterMode>('all');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   if (!currentUser) return null;
 
@@ -22,6 +33,35 @@ export function Schedule() {
     const dateA = new Date(a.date + 'T' + a.startTime);
     const dateB = new Date(b.date + 'T' + b.startTime);
     return dateA.getTime() - dateB.getTime();
+  });
+
+  // Filter events based on filterMode
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const filteredEvents = sortedEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+
+    switch (filterMode) {
+      case 'today':
+        return eventDate.getTime() === today.getTime();
+      case 'upcoming':
+        return eventDate.getTime() >= today.getTime();
+      case 'past':
+        return eventDate.getTime() < today.getTime();
+      default:
+        return true;
+    }
+  });
+
+  // Get upcoming events for notifications (next 7 days)
+  const upcomingNotifications = sortedEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    const next7Days = new Date(today);
+    next7Days.setDate(next7Days.getDate() + 7);
+    return eventDate.getTime() >= today.getTime() && eventDate.getTime() <= next7Days.getTime();
   });
 
   const getEventTypeColor = (type: string) => {
@@ -87,7 +127,82 @@ export function Schedule() {
     return grouped;
   };
 
-  const groupedEvents = groupEventsByMonth(sortedEvents);
+  const groupedEvents = groupEventsByMonth(filteredEvents);
+
+  // Event Creation Form
+  if (showCreateForm) {
+    return (
+      <div className="fixed inset-0 bg-background z-50 overflow-y-auto pb-20">
+        <div className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="icon" onClick={() => setShowCreateForm(false)}>
+              <X className="w-5 h-5" />
+            </Button>
+            <h2>Eveniment nou</h2>
+            <Button variant="ghost" size="icon">
+              <Save className="w-5 h-5" />
+            </Button>
+          </div>
+
+          <Card className="p-4 space-y-4">
+            <div>
+              <Label htmlFor="eventType">Tip eveniment</Label>
+              <select id="eventType" className="w-full p-2 border rounded-md mt-1">
+                <option value="training">Antrenament</option>
+                <option value="match">Meci</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="eventTitle">Titlu</Label>
+              <Input id="eventTitle" placeholder="Ex: Antrenament săptămânal" className="mt-1" />
+            </div>
+
+            <div>
+              <Label htmlFor="eventDate">Data</Label>
+              <Input id="eventDate" type="date" className="mt-1" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="eventTime">Ora</Label>
+                <Input id="eventTime" type="time" className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="eventDuration">Durata (min)</Label>
+                <Input id="eventDuration" type="number" placeholder="90" className="mt-1" />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="eventLocation">Locație</Label>
+              <Input id="eventLocation" placeholder="Stadium" className="mt-1" />
+            </div>
+
+            <div>
+              <Label htmlFor="eventNotes">Note</Label>
+              <textarea
+                id="eventNotes"
+                className="w-full p-2 border rounded-md mt-1"
+                rows={3}
+                placeholder="Note adiționale..."
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="recurring" />
+              <Label htmlFor="recurring">Eveniment recurent (săptămânal)</Label>
+            </div>
+
+            <Button className="w-full">
+              <Save className="w-4 h-4 mr-2" />
+              Salvează eveniment
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-20">
@@ -99,30 +214,154 @@ export function Schedule() {
             Echipa {team?.name || 'ta'}
           </p>
         </div>
-        {currentUser.role === 'coach' && (
-          <Button size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Adaugă
-          </Button>
+        <div className="flex gap-2">
+          {upcomingNotifications.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="relative"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center">
+                {upcomingNotifications.length}
+              </span>
+            </Button>
+          )}
+          {currentUser.role === 'coach' && (
+            <Button size="sm" onClick={() => setShowCreateForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Adaugă
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Notifications Panel */}
+      <AnimatePresence>
+        {showNotifications && upcomingNotifications.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Card className="p-4 bg-blue-50 border-blue-200">
+              <div className="flex items-center gap-2 mb-3">
+                <Bell className="w-5 h-5 text-blue-600" />
+                <h3 className="text-blue-800">Evenimente următoare ({upcomingNotifications.length})</h3>
+              </div>
+              <div className="space-y-2">
+                {upcomingNotifications.map((event) => (
+                  <div key={event.id} className="text-sm text-blue-800">
+                    <strong>{event.title}</strong> - {formatDate(event.date)} la {event.startTime}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Filter Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        <Button
+          variant={filterMode === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilterMode('all')}
+        >
+          Toate ({sortedEvents.length})
+        </Button>
+        <Button
+          variant={filterMode === 'today' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilterMode('today')}
+        >
+          Astăzi
+        </Button>
+        <Button
+          variant={filterMode === 'upcoming' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilterMode('upcoming')}
+        >
+          Viitoare
+        </Button>
+        <Button
+          variant={filterMode === 'past' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilterMode('past')}
+        >
+          Trecute
+        </Button>
       </div>
 
       {/* View Toggle */}
       <div className="flex gap-2">
-        <Button variant="default" size="sm">
+        <Button
+          variant={viewMode === 'list' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('list')}
+        >
+          <List className="w-4 h-4 mr-2" />
           Listă
         </Button>
-        <Button variant="outline" size="sm">
+        <Button
+          variant={viewMode === 'calendar' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('calendar')}
+        >
+          <CalendarDays className="w-4 h-4 mr-2" />
           Calendar
-        </Button>
-        <Button variant="outline" size="sm">
-          Săptămâna
         </Button>
       </div>
 
+      {/* Calendar View */}
+      {viewMode === 'calendar' && (
+        <Card className="p-4">
+          <div className="grid grid-cols-7 gap-2">
+            {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
+              <div key={idx} className="text-center font-medium text-sm text-muted-foreground p-2">
+                {day}
+              </div>
+            ))}
+            {Array.from({ length: 35 }).map((_, idx) => {
+              const date = new Date(today);
+              date.setDate(date.getDate() - date.getDay() + 1 + idx);
+              const dayEvents = filteredEvents.filter(e => {
+                const eventDate = new Date(e.date);
+                eventDate.setHours(0, 0, 0, 0);
+                const checkDate = new Date(date);
+                checkDate.setHours(0, 0, 0, 0);
+                return eventDate.getTime() === checkDate.getTime();
+              });
+              const isToday = date.toDateString() === today.toDateString();
+
+              return (
+                <div
+                  key={idx}
+                  className={`aspect-square p-2 border rounded-lg text-center ${
+                    isToday ? 'border-primary bg-primary/5' : ''
+                  } ${dayEvents.length > 0 ? 'bg-blue-50' : ''}`}
+                >
+                  <div className={`text-sm ${isToday ? 'font-bold text-primary' : ''}`}>
+                    {date.getDate()}
+                  </div>
+                  {dayEvents.length > 0 && (
+                    <div className="mt-1">
+                      <div className="w-2 h-2 rounded-full bg-primary mx-auto" />
+                      <div className="text-xs text-muted-foreground mt-1">{dayEvents.length}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* Events List Grouped by Month */}
-      <div className="space-y-6">
-        {Object.entries(groupedEvents).map(([monthYear, monthEvents]) => (
+      {viewMode === 'list' && (
+        <div className="space-y-6">
+          {Object.entries(groupedEvents).map(([monthYear, monthEvents]) => (
           <div key={monthYear}>
             <h3 className="mb-3 sticky top-0 bg-background py-2 z-10">{monthYear}</h3>
             <div className="space-y-3">
@@ -134,7 +373,7 @@ export function Schedule() {
                 return (
                   <Card
                     key={event.id}
-                    className={`p-4 ${isPast ? 'opacity-60' : ''} ${isToday ? 'border-primary border-2' : ''}`}
+                    className={`p-4 ${isPast ? 'bg-muted/30 border-muted-foreground/20' : ''} ${isToday ? 'border-primary border-2' : ''}`}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
@@ -239,9 +478,10 @@ export function Schedule() {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
-      {sortedEvents.length === 0 && (
+      {filteredEvents.length === 0 && (
         <Card className="p-8 text-center">
           <Calendar className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
           <p className="text-muted-foreground">

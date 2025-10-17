@@ -19,20 +19,29 @@ import {
   TrendingUp,
   ChevronDown,
   Ban,
+  Calendar as CalendarIcon,
+  Download,
+  Bell,
+  History,
 } from 'lucide-react';
 import {
   getTeamById,
   getPlayersByTeamId,
   getEventsByTeamId,
   events as allEvents,
+  getPlayerById,
 } from '../data/mockData';
-import type { AttendanceStatus } from '../types';
+import type { AttendanceStatus, Player } from '../types';
 
 export function Attendance() {
   const { currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEventId] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<AttendanceStatus | 'all'>('all');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedPlayerHistory, setSelectedPlayerHistory] = useState<Player | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   // Mock attendance state (in real app, this would be in context/state management)
   const [attendanceRecords, setAttendanceRecords] = useState<{
@@ -46,28 +55,90 @@ export function Attendance() {
   const teamPlayers = team ? getPlayersByTeamId(team.id) : [];
   const teamEvents = team ? getEventsByTeamId(team.id) : [];
 
-  // Get today's events and upcoming
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get events for selected date
+  const selectedDateNormalized = new Date(selectedDate);
+  selectedDateNormalized.setHours(0, 0, 0, 0);
 
-  const todayEvents = teamEvents.filter(e => {
+  const dateEvents = teamEvents.filter(e => {
     const eventDate = new Date(e.date);
     eventDate.setHours(0, 0, 0, 0);
-    return eventDate.getTime() === today.getTime();
+    return eventDate.getTime() === selectedDateNormalized.getTime();
   });
 
   const upcomingEvents = teamEvents
     .filter(e => {
       const eventDate = new Date(e.date);
       eventDate.setHours(0, 0, 0, 0);
-      return eventDate.getTime() >= today.getTime();
+      return eventDate.getTime() >= selectedDateNormalized.getTime();
     })
     .slice(0, 5);
 
-  // Auto-select today's first event or first upcoming
+  // Auto-select event based on selectedEventId or first event of the day
   const selectedEvent = selectedEventId
     ? allEvents.find(e => e.id === selectedEventId)
-    : todayEvents[0] || upcomingEvents[0];
+    : dateEvents[0] || upcomingEvents[0];
+
+  // Export attendance report
+  const exportAttendanceReport = () => {
+    if (!selectedEvent) return;
+
+    const csvContent = [
+      ['Nume', 'Poziție', 'Status', 'Ora check-in', 'Motiv'],
+      ...teamPlayers.map(p => {
+        const status = getPlayerStatus(p.id);
+        const checkInTime = getCheckInTime(p.id);
+        const excuseReason = getExcuseReason(p.id);
+        return [
+          p.name,
+          p.position,
+          status,
+          checkInTime || '-',
+          excuseReason || '-',
+        ];
+      })
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `prezenta_${selectedEvent.title}_${selectedEvent.date}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Get attendance history for a player
+  const getPlayerAttendanceHistory = (playerId: string) => {
+    const history = teamEvents
+      .filter(e => new Date(e.date) <= new Date())
+      .map(event => {
+        const record = event.attendance.find(a => a.playerId === playerId);
+        return {
+          event,
+          status: record?.status || 'pending',
+          checkInTime: record?.checkInTime,
+        };
+      })
+      .sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime());
+
+    return history;
+  };
+
+  // Get absence notifications
+  const getAbsenceNotifications = () => {
+    const absences = teamPlayers
+      .filter(p => {
+        const status = getPlayerStatus(p.id);
+        return status === 'absent' && selectedEvent;
+      })
+      .map(p => ({
+        player: p,
+        event: selectedEvent,
+      }));
+
+    return absences;
+  };
 
   if (!selectedEvent) {
     return (
@@ -198,21 +269,185 @@ export function Attendance() {
     setAttendanceRecords(newRecords);
   };
 
+  // Player History Modal
+  if (selectedPlayerHistory) {
+    const history = getPlayerAttendanceHistory(selectedPlayerHistory.id);
+    const presentCount = history.filter(h => h.status === 'present' || h.status === 'late').length;
+    const attendancePercentage = history.length > 0 ? Math.round((presentCount / history.length) * 100) : 0;
+
+    return (
+      <div className="fixed inset-0 bg-background z-50 overflow-y-auto pb-20">
+        <div className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="icon" onClick={() => setSelectedPlayerHistory(null)}>
+              <X className="w-5 h-5" />
+            </Button>
+            <h2>Istoric Prezență</h2>
+            <div className="w-10" />
+          </div>
+
+          <Card className="p-4">
+            <div className="text-center mb-4">
+              <h3>{selectedPlayerHistory.name}</h3>
+              <p className="text-sm text-muted-foreground">{selectedPlayerHistory.position}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{attendancePercentage}%</div>
+                <div className="text-xs text-muted-foreground">Rata prezență</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{presentCount}/{history.length}</div>
+                <div className="text-xs text-muted-foreground">Prezent/Total</div>
+              </div>
+            </div>
+          </Card>
+
+          <div className="space-y-2">
+            {history.map((record, idx) => (
+              <Card key={idx} className="p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{record.event.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(record.event.date).toLocaleDateString('ro-RO')} • {record.event.startTime}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {record.checkInTime && (
+                      <span className="text-xs text-muted-foreground">{record.checkInTime}</span>
+                    )}
+                    <Badge variant="outline" className={getStatusColor(record.status)}>
+                      {getStatusLabel(record.status)}
+                    </Badge>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const absenceNotifications = getAbsenceNotifications();
+
   return (
     <div className="space-y-6 pb-20">
       {/* Header */}
-      <div>
-        <h1>Prezență</h1>
-        <p className="text-muted-foreground">Marchează prezența jucătorilor</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1>Prezență</h1>
+          <p className="text-muted-foreground">Marchează prezența jucătorilor</p>
+        </div>
+        <div className="flex gap-2">
+          {absenceNotifications.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="relative"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                {absenceNotifications.length}
+              </span>
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportAttendanceReport}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
       </div>
+
+      {/* Absence Notifications */}
+      <AnimatePresence>
+        {showNotifications && absenceNotifications.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Card className="p-4 bg-red-50 border-red-200">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+                <h3 className="text-red-800">Absențe ({absenceNotifications.length})</h3>
+              </div>
+              <div className="space-y-2">
+                {absenceNotifications.map((notif, idx) => (
+                  <div key={idx} className="text-sm text-red-800">
+                    <strong>{notif.player.name}</strong> - {notif.player.position}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Date Picker */}
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() => setShowDatePicker(!showDatePicker)}
+        >
+          <CalendarIcon className="w-4 h-4 mr-2" />
+          {selectedDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </Button>
+      </div>
+
+      <AnimatePresence>
+        {showDatePicker && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Card className="p-4">
+              <div className="grid grid-cols-3 gap-2">
+                {[-7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7].map(offset => {
+                  const date = new Date();
+                  date.setDate(date.getDate() + offset);
+                  const isSelected = date.toDateString() === selectedDate.toDateString();
+                  return (
+                    <Button
+                      key={offset}
+                      variant={isSelected ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedDate(date);
+                        setSelectedEventId(null);
+                        setShowDatePicker(false);
+                      }}
+                    >
+                      <div className="text-center">
+                        <div className="text-xs">{date.toLocaleDateString('ro-RO', { weekday: 'short' })}</div>
+                        <div className="font-bold">{date.getDate()}</div>
+                      </div>
+                    </Button>
+                  );
+                })}
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Event Selection */}
       <Card className="p-4">
         <div className="flex items-center justify-between mb-2">
           <Label className="text-sm font-medium">Eveniment selectat</Label>
-          <Button variant="ghost" size="sm" className="h-auto p-0">
-            <ChevronDown className="w-4 h-4" />
-          </Button>
+          {dateEvents.length > 1 && (
+            <Button variant="ghost" size="sm" className="h-auto p-0">
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Badge variant={selectedEvent.type === 'match' ? 'default' : 'secondary'}>
@@ -374,10 +609,20 @@ export function Attendance() {
                   )}
                 </div>
 
-                <Badge variant="outline" className={`${getStatusColor(status)} flex items-center gap-1`}>
-                  {getStatusIcon(status)}
-                  <span className="hidden sm:inline">{getStatusLabel(status)}</span>
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedPlayerHistory(player)}
+                    title="Vezi istoric"
+                  >
+                    <History className="w-4 h-4" />
+                  </Button>
+                  <Badge variant="outline" className={`${getStatusColor(status)} flex items-center gap-1`}>
+                    {getStatusIcon(status)}
+                    <span className="hidden sm:inline">{getStatusLabel(status)}</span>
+                  </Badge>
+                </div>
               </div>
 
               {/* Status Buttons - Only for coach or if pending */}

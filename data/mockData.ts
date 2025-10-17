@@ -327,12 +327,38 @@ export const players: Player[] = [
 
 // ========== EVENTS ==========
 const today = new Date();
+const yesterday = new Date(today);
+yesterday.setDate(yesterday.getDate() - 1);
+const twoDaysAgo = new Date(today);
+twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+const threeDaysAgo = new Date(today);
+threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 const tomorrow = new Date(today);
 tomorrow.setDate(tomorrow.getDate() + 1);
+const twoDaysLater = new Date(today);
+twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+const threeDaysLater = new Date(today);
+threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+const fourDaysLater = new Date(today);
+fourDaysLater.setDate(fourDaysLater.getDate() + 4);
+const fiveDaysLater = new Date(today);
+fiveDaysLater.setDate(fiveDaysLater.getDate() + 5);
+const sixDaysLater = new Date(today);
+sixDaysLater.setDate(sixDaysLater.getDate() + 6);
 const nextWeek = new Date(today);
 nextWeek.setDate(nextWeek.getDate() + 7);
+const twoWeeksLater = new Date(today);
+twoWeeksLater.setDate(twoWeeksLater.getDate() + 14);
 const lastWeek = new Date(today);
 lastWeek.setDate(lastWeek.getDate() - 7);
+const twoWeeksAgo = new Date(today);
+twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+const threeWeeksAgo = new Date(today);
+threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
+const oneMonthAgo = new Date(today);
+oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+const oneMonthLater = new Date(today);
+oneMonthLater.setDate(oneMonthLater.getDate() + 30);
 
 export const events: Event[] = [
   // Today's training
@@ -507,6 +533,332 @@ export const events: Event[] = [
       ],
     },
     notificationSent: true,
+  },
+  // Yesterday's training
+  {
+    id: 'event-5',
+    type: 'training',
+    title: 'Antrenament tehnic U9',
+    date: yesterday.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 1',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      { id: 'att-y-1', eventId: 'event-5', playerId: 'player-1', status: 'present', checkInTime: '15:55', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+      { id: 'att-y-2', eventId: 'event-5', playerId: 'player-2', status: 'present', checkInTime: '15:50', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+      { id: 'att-y-3', eventId: 'event-5', playerId: 'player-3', status: 'present', checkInTime: '16:00', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+      { id: 'att-y-4', eventId: 'event-5', playerId: 'player-4', status: 'present', checkInTime: '15:45', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+      { id: 'att-y-5', eventId: 'event-5', playerId: 'player-5', status: 'present', checkInTime: '16:05', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+      { id: 'att-y-6', eventId: 'event-5', playerId: 'player-6', status: 'absent', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+      { id: 'att-y-7', eventId: 'event-5', playerId: 'player-7', status: 'present', checkInTime: '15:58', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+      { id: 'att-y-8', eventId: 'event-5', playerId: 'player-8', status: 'late', checkInTime: '16:20', markedBy: 'user-coach-1', createdAt: yesterday.toISOString(), updatedAt: yesterday.toISOString() },
+    ],
+    notificationSent: true,
+    notes: 'Lucru la control și pase',
+  },
+  // 2 days ago - Match
+  {
+    id: 'event-6',
+    type: 'match',
+    title: 'Meci U9 vs FCSB Academy',
+    date: twoDaysAgo.toISOString().split('T')[0],
+    startTime: '11:00',
+    duration: 60,
+    location: 'Stadionul Steaua',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      { id: 'att-2d-1', eventId: 'event-6', playerId: 'player-1', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+      { id: 'att-2d-2', eventId: 'event-6', playerId: 'player-2', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+      { id: 'att-2d-3', eventId: 'event-6', playerId: 'player-3', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+      { id: 'att-2d-4', eventId: 'event-6', playerId: 'player-4', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+      { id: 'att-2d-5', eventId: 'event-6', playerId: 'player-5', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+      { id: 'att-2d-6', eventId: 'event-6', playerId: 'player-6', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+      { id: 'att-2d-7', eventId: 'event-6', playerId: 'player-7', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+      { id: 'att-2d-8', eventId: 'event-6', playerId: 'player-8', status: 'present', markedBy: 'user-coach-1', createdAt: twoDaysAgo.toISOString(), updatedAt: twoDaysAgo.toISOString() },
+    ],
+    matchDetails: {
+      opponent: 'FCSB Academy U9',
+      isHome: true,
+      score: { team: 4, opponent: 1 },
+      result: 'win',
+      goalScorers: [
+        { playerId: 'player-1', minute: 12, assistedBy: 'player-2' },
+        { playerId: 'player-5', minute: 18 },
+        { playerId: 'player-1', minute: 35, assistedBy: 'player-6' },
+        { playerId: 'player-5', minute: 48, assistedBy: 'player-2' },
+      ],
+    },
+    notificationSent: true,
+  },
+  // 3 days ago - Training
+  {
+    id: 'event-7',
+    type: 'training',
+    title: 'Antrenament tactic U9',
+    date: threeDaysAgo.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 2',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      { id: 'att-3d-1', eventId: 'event-7', playerId: 'player-1', status: 'present', checkInTime: '15:50', markedBy: 'user-coach-1', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+      { id: 'att-3d-2', eventId: 'event-7', playerId: 'player-2', status: 'present', checkInTime: '15:55', markedBy: 'user-coach-1', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+      { id: 'att-3d-3', eventId: 'event-7', playerId: 'player-3', status: 'present', checkInTime: '16:00', markedBy: 'user-coach-1', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+      { id: 'att-3d-4', eventId: 'event-7', playerId: 'player-4', status: 'present', checkInTime: '15:48', markedBy: 'user-coach-1', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+      { id: 'att-3d-5', eventId: 'event-7', playerId: 'player-5', status: 'excused', excuseReason: 'Probleme personale', excusedBy: 'user-parent-5', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+      { id: 'att-3d-6', eventId: 'event-7', playerId: 'player-6', status: 'present', checkInTime: '16:02', markedBy: 'user-coach-1', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+      { id: 'att-3d-7', eventId: 'event-7', playerId: 'player-7', status: 'present', checkInTime: '15:57', markedBy: 'user-coach-1', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+      { id: 'att-3d-8', eventId: 'event-7', playerId: 'player-8', status: 'present', checkInTime: '16:01', markedBy: 'user-coach-1', createdAt: threeDaysAgo.toISOString(), updatedAt: threeDaysAgo.toISOString() },
+    ],
+    notificationSent: true,
+    notes: 'Formații ofensive și defensive',
+  },
+  // Tomorrow +2 - Training
+  {
+    id: 'event-8',
+    type: 'training',
+    title: 'Antrenament U9',
+    date: twoDaysLater.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 1',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    notificationSent: false,
+  },
+  // +3 days - Training
+  {
+    id: 'event-9',
+    type: 'training',
+    title: 'Antrenament fizic U9',
+    date: threeDaysLater.toISOString().split('T')[0],
+    startTime: '17:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 2',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    notificationSent: false,
+    notes: 'Focus pe rezistență și viteză',
+  },
+  // +4 days - Match
+  {
+    id: 'event-10',
+    type: 'match',
+    title: 'Meci U9 vs Universitatea Craiova Academy',
+    date: fourDaysLater.toISOString().split('T')[0],
+    startTime: '10:30',
+    duration: 60,
+    location: 'Stadionul Craiova',
+    address: 'Craiova',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    matchDetails: {
+      opponent: 'Universitatea Craiova Academy U9',
+      isHome: false,
+    },
+    notificationSent: false,
+    notes: 'Plecare cu autocarul la 8:00 dimineața',
+  },
+  // +5 days - Training
+  {
+    id: 'event-11',
+    type: 'training',
+    title: 'Antrenament recuperare U9',
+    date: fiveDaysLater.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 60,
+    location: 'Baza Sportivă Steaua - Teren 1',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    notificationSent: false,
+    notes: 'Sesiune ușoară după meci',
+  },
+  // +6 days - Training
+  {
+    id: 'event-12',
+    type: 'training',
+    title: 'Antrenament U9',
+    date: sixDaysLater.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 1',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    notificationSent: false,
+  },
+  // Next week + 1 - Match
+  {
+    id: 'event-13',
+    type: 'match',
+    title: 'Meci U9 vs CFR Cluj Academy',
+    date: new Date(nextWeek.getTime() + 86400000).toISOString().split('T')[0],
+    startTime: '11:00',
+    duration: 60,
+    location: 'Stadionul Steaua',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    matchDetails: {
+      opponent: 'CFR Cluj Academy U9',
+      isHome: true,
+    },
+    notificationSent: false,
+  },
+  // 2 weeks later - Training
+  {
+    id: 'event-14',
+    type: 'training',
+    title: 'Antrenament U9',
+    date: twoWeeksLater.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 1',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    notificationSent: false,
+  },
+  // 2 weeks ago - Training
+  {
+    id: 'event-15',
+    type: 'training',
+    title: 'Antrenament U9',
+    date: twoWeeksAgo.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    location: 'Baza Sportivă Steaua - Teren 1',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      { id: 'att-2w-1', eventId: 'event-15', playerId: 'player-1', status: 'present', checkInTime: '15:55', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+      { id: 'att-2w-2', eventId: 'event-15', playerId: 'player-2', status: 'present', checkInTime: '15:52', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+      { id: 'att-2w-3', eventId: 'event-15', playerId: 'player-3', status: 'late', checkInTime: '16:18', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+      { id: 'att-2w-4', eventId: 'event-15', playerId: 'player-4', status: 'present', checkInTime: '15:50', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+      { id: 'att-2w-5', eventId: 'event-15', playerId: 'player-5', status: 'present', checkInTime: '15:58', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+      { id: 'att-2w-6', eventId: 'event-15', playerId: 'player-6', status: 'present', checkInTime: '16:00', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+      { id: 'att-2w-7', eventId: 'event-15', playerId: 'player-7', status: 'present', checkInTime: '15:59', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+      { id: 'att-2w-8', eventId: 'event-15', playerId: 'player-8', status: 'absent', markedBy: 'user-coach-1', createdAt: twoWeeksAgo.toISOString(), updatedAt: twoWeeksAgo.toISOString() },
+    ],
+    notificationSent: true,
+  },
+  // 3 weeks ago - Match
+  {
+    id: 'event-16',
+    type: 'match',
+    title: 'Meci U9 vs Viitorul Constanța Academy',
+    date: threeWeeksAgo.toISOString().split('T')[0],
+    startTime: '11:00',
+    duration: 60,
+    location: 'Stadionul Viitorul',
+    address: 'Constanța',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      { id: 'att-3w-1', eventId: 'event-16', playerId: 'player-1', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+      { id: 'att-3w-2', eventId: 'event-16', playerId: 'player-2', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+      { id: 'att-3w-3', eventId: 'event-16', playerId: 'player-3', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+      { id: 'att-3w-4', eventId: 'event-16', playerId: 'player-4', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+      { id: 'att-3w-5', eventId: 'event-16', playerId: 'player-5', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+      { id: 'att-3w-6', eventId: 'event-16', playerId: 'player-6', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+      { id: 'att-3w-7', eventId: 'event-16', playerId: 'player-7', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+      { id: 'att-3w-8', eventId: 'event-16', playerId: 'player-8', status: 'present', markedBy: 'user-coach-1', createdAt: threeWeeksAgo.toISOString(), updatedAt: threeWeeksAgo.toISOString() },
+    ],
+    matchDetails: {
+      opponent: 'Viitorul Constanța Academy U9',
+      isHome: false,
+      score: { team: 2, opponent: 2 },
+      result: 'draw',
+      goalScorers: [
+        { playerId: 'player-5', minute: 22 },
+        { playerId: 'player-1', minute: 38, assistedBy: 'player-2' },
+      ],
+    },
+    notificationSent: true,
+  },
+  // 1 month ago - Match
+  {
+    id: 'event-17',
+    type: 'match',
+    title: 'Meci U9 vs Petrolul Ploiești Academy',
+    date: oneMonthAgo.toISOString().split('T')[0],
+    startTime: '10:00',
+    duration: 60,
+    location: 'Stadionul Steaua',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [
+      { id: 'att-1m-1', eventId: 'event-17', playerId: 'player-1', status: 'present', markedBy: 'user-coach-1', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+      { id: 'att-1m-2', eventId: 'event-17', playerId: 'player-2', status: 'present', markedBy: 'user-coach-1', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+      { id: 'att-1m-3', eventId: 'event-17', playerId: 'player-3', status: 'present', markedBy: 'user-coach-1', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+      { id: 'att-1m-4', eventId: 'event-17', playerId: 'player-4', status: 'present', markedBy: 'user-coach-1', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+      { id: 'att-1m-5', eventId: 'event-17', playerId: 'player-5', status: 'present', markedBy: 'user-coach-1', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+      { id: 'att-1m-6', eventId: 'event-17', playerId: 'player-6', status: 'excused', excuseReason: 'Boală', excusedBy: 'parent', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+      { id: 'att-1m-7', eventId: 'event-17', playerId: 'player-7', status: 'present', markedBy: 'user-coach-1', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+      { id: 'att-1m-8', eventId: 'event-17', playerId: 'player-8', status: 'present', markedBy: 'user-coach-1', createdAt: oneMonthAgo.toISOString(), updatedAt: oneMonthAgo.toISOString() },
+    ],
+    matchDetails: {
+      opponent: 'Petrolul Ploiești Academy U9',
+      isHome: true,
+      score: { team: 1, opponent: 3 },
+      result: 'loss',
+      goalScorers: [
+        { playerId: 'player-5', minute: 25, assistedBy: 'player-1' },
+      ],
+    },
+    notificationSent: true,
+  },
+  // 1 month later - Match
+  {
+    id: 'event-18',
+    type: 'match',
+    title: 'Meci U9 vs Astra Giurgiu Academy',
+    date: oneMonthLater.toISOString().split('T')[0],
+    startTime: '11:00',
+    duration: 60,
+    location: 'Stadionul Steaua',
+    address: 'Str. Ghencea, nr. 35, București',
+    teamId: 'team-1',
+    clubId: 'club-1',
+    createdBy: 'user-coach-1',
+    attendance: [],
+    matchDetails: {
+      opponent: 'Astra Giurgiu Academy U9',
+      isHome: true,
+    },
+    notificationSent: false,
   },
 ];
 

@@ -107,21 +107,24 @@ function CoachDashboard({ onNavigate }: DashboardProps) {
       value: teamPlayers.length,
       icon: Users,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-blue-50',
+      action: 'players'
     },
     {
       label: 'Prezență azi',
       value: totalExpected > 0 ? `${attendanceRate}%` : 'N/A',
       icon: TrendingUp,
       color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      bgColor: 'bg-green-50',
+      action: 'attendance'
     },
     {
       label: 'Evenimente',
       value: upcomingEvents.length,
       icon: Calendar,
       color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
+      bgColor: 'bg-purple-50',
+      action: 'schedule'
     },
   ];
 
@@ -210,6 +213,8 @@ function CoachDashboard({ onNavigate }: DashboardProps) {
               }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => onNavigate?.(stat.action)}
+              className="cursor-pointer"
             >
               <Card className="p-3 transition-shadow hover:shadow-lg">
                 <motion.div
