@@ -7,9 +7,10 @@ import path from 'path'
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({
+    ...(process.env.SKIP_PWA ? [] : [VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icon.svg', 'apple-touch-icon-180x180.png'],
+      minify: false,
       manifest: {
         name: 'Youth Football App',
         short_name: 'Youth Football',
@@ -45,6 +46,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        maximumFileSizeToCacheInBytes: 3000000,
         // Basic runtime caching for prototype - no aggressive offline support
         runtimeCaching: [
           {
@@ -63,13 +66,38 @@ export default defineConfig({
           }
         ]
       }
-    })
+    })])
   ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'vendor-radix';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-lucide';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    }
+  }
 })
 
 

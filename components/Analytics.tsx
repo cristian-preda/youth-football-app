@@ -21,7 +21,6 @@ import {
   getEventsByClubId,
   getTeamById,
   clubs,
-  players,
 } from '../data/mockData';
 
 export function Analytics() {

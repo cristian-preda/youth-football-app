@@ -10,7 +10,6 @@ import {
   Users,
   Trophy,
   TrendingUp,
-  Calendar,
   ChevronRight,
   Mail,
   Phone,

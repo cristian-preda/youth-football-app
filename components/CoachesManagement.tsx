@@ -9,8 +9,6 @@ import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import {
   User,
-  Trophy,
-  Users,
   Mail,
   Phone,
   TrendingUp,

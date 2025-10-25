@@ -999,7 +999,7 @@ function PlayerDashboard() {
             Următoarele evenimente
           </h3>
           <div className="space-y-3">
-            {upcomingEvents.map((event, index) => (
+            {upcomingEvents.map((event) => (
               <Card key={event.id} className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
