@@ -79,23 +79,24 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1000,
-    minify: 'esbuild',
+    minify: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            // Keep react and react-dom together but separate from other vendors
+            if (id.includes('react/') || id.includes('react-dom/')) {
               return 'vendor-react';
             }
+            // Group radix components
             if (id.includes('@radix-ui')) {
               return 'vendor-radix';
             }
+            // Framer motion is large, keep it separate
             if (id.includes('framer-motion')) {
               return 'vendor-framer';
             }
-            if (id.includes('lucide-react')) {
-              return 'vendor-lucide';
-            }
+            // Everything else goes to vendor
             return 'vendor';
           }
         }
