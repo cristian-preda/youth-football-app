@@ -11,6 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icon.svg', 'apple-touch-icon-180x180.png'],
       minify: false,
+      injectManifest: {
+        minify: false,
+      },
       manifest: {
         name: 'Youth Football App',
         short_name: 'Youth Football',
@@ -48,6 +51,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         maximumFileSizeToCacheInBytes: 3000000,
+        mode: 'development',
         // Basic runtime caching for prototype - no aggressive offline support
         runtimeCaching: [
           {
