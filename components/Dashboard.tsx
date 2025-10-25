@@ -19,7 +19,8 @@ import {
   MessageSquare,
   Trophy,
   Target,
-  Activity
+  Activity,
+  Award
 } from 'lucide-react';
 import {
   getTeamById,
@@ -27,6 +28,10 @@ import {
   getEventsByTeamId,
   getChildrenByParentId,
   getUserById,
+  getTeamsByClubId,
+  getPlayersByClubId,
+  getEventsByClubId,
+  getCoachesByClubId,
   clubs,
   players,
 } from '../data/mockData';
@@ -45,7 +50,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     case 'player':
       return <PlayerDashboard />;
     case 'director':
-      return <DirectorDashboard />;
+      return <DirectorDashboard onNavigate={onNavigate} />;
     default:
       return <CoachDashboard onNavigate={onNavigate} />;
   }
@@ -713,46 +718,756 @@ function ParentDashboard() {
   );
 }
 
-// ========== PLAYER DASHBOARD (Placeholder) ==========
+// ========== PLAYER DASHBOARD ==========
 function PlayerDashboard() {
   const { currentUser } = useAuth();
   const player = players.find(p => p.id === currentUser?.id);
+  
+  if (!player) {
+    return (
+      <div className="space-y-6 pb-20">
+        <div>
+          <h1>Salut!</h1>
+          <p className="text-muted-foreground">Nu s-au găsit date despre jucător</p>
+        </div>
+      </div>
+    );
+  }
+
+  const team = getTeamById(player.teamId);
+  const coach = team ? getUserById(team.coachId) : null;
+  const teamEvents = team ? getEventsByTeamId(team.id) : [];
+
+  // Get today's date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Upcoming events (next 3)
+  const upcomingEvents = teamEvents
+    .filter(e => {
+      const eventDate = new Date(e.date);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() >= today.getTime();
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 3);
+
+  // Recent matches (last 3 completed)
+  const recentMatches = teamEvents
+    .filter(e => {
+      const eventDate = new Date(e.date);
+      return e.type === 'match' && eventDate < new Date() && e.matchDetails?.result;
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+
+  // Calculate personal attendance
+  const playerAttendance = teamEvents.flatMap(e => 
+    e.attendance.filter(a => a.playerId === player.id)
+  );
+  const presentCount = playerAttendance.filter(
+    a => a.status === 'present' || a.status === 'late'
+  ).length;
+  const attendanceRate = playerAttendance.length > 0
+    ? Math.round((presentCount / playerAttendance.length) * 100)
+    : 0;
+
+  // Last 5 attendances for streak check
+  const recentAttendances = teamEvents
+    .filter(e => new Date(e.date) < new Date())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
+    .flatMap(e => e.attendance.filter(a => a.playerId === player.id));
+
+  const hasGoodStreak = recentAttendances.length >= 5 && 
+    recentAttendances.every(a => a.status === 'present' || a.status === 'late');
+
+  // Calculate achievements
+  const achievements = [
+    {
+      id: 'first-goal',
+      title: 'Primul gol!',
+      description: 'Ai marcat primul gol',
+      icon: Trophy,
+      unlocked: player.stats.goals > 0,
+      color: 'text-yellow-600',
+    },
+    {
+      id: '10-matches',
+      title: '10 meciuri!',
+      description: 'Ai jucat 10 meciuri',
+      icon: Target,
+      unlocked: player.stats.matchesPlayed >= 10,
+      color: 'text-blue-600',
+    },
+    {
+      id: 'good-attendance',
+      title: 'Prezent!',
+      description: '5 prezențe consecutive',
+      icon: CheckCircle2,
+      unlocked: hasGoodStreak,
+      color: 'text-green-600',
+    },
+    {
+      id: 'team-player',
+      title: 'Jucător de echipă!',
+      description: 'Ai dat assisturi',
+      icon: Users,
+      unlocked: player.stats.assists > 0,
+      color: 'text-purple-600',
+    },
+  ];
+
+  const unlockedAchievements = achievements.filter(a => a.unlocked);
+
+  // Helper functions
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const days = ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm'];
+    const months = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]}`;
+  };
+
+  const getEventTypeLabel = (type: string) => {
+    return type === 'training' ? 'Antrenament' : 'Meci';
+  };
+
+  const getResultBadge = (result?: string) => {
+    switch (result) {
+      case 'win':
+        return <Badge className="bg-green-600">Victorie</Badge>;
+      case 'draw':
+        return <Badge variant="secondary">Egal</Badge>;
+      case 'loss':
+        return <Badge variant="destructive">Înfrângere</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  const isGoalkeeper = player.position === 'Portar';
 
   return (
     <div className="space-y-6 pb-20">
-      <div>
-        <h1>Salut, {player?.name}!</h1>
-        <p className="text-muted-foreground">Vezi-ți statisticile și progresul</p>
-      </div>
+      {/* Welcome Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1>Salut, {player.name.split(' ')[0]}! 👋</h1>
+        <p className="text-muted-foreground">Statisticile și progresul tău</p>
+      </motion.div>
 
-      <Card className="p-6 text-center">
-        <Target className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-        <p className="text-muted-foreground">
-          Dashboard pentru jucători în dezvoltare...
-        </p>
-      </Card>
+      {/* Player Info Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <Card className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="text-2xl font-bold text-primary">#{player.jerseyNumber}</div>
+            </div>
+            <div className="flex-1">
+              <h2 className="mb-1">{player.name}</h2>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary">{player.age} ani</Badge>
+                <Badge variant="outline">{player.position}</Badge>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 pt-4 border-t">
+            <div className="text-sm">
+              <span className="text-muted-foreground">Echipa:</span>
+              <div className="font-medium">{team?.name}</div>
+            </div>
+            <div className="text-sm">
+              <span className="text-muted-foreground">Antrenor:</span>
+              <div className="font-medium">{coach?.name}</div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Stats Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <h3 className="mb-3 flex items-center gap-2">
+          <Trophy className="w-5 h-5" />
+          Statisticile tale
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="p-4">
+            <div className="text-2xl font-bold text-primary">{player.stats.goals}</div>
+            <div className="text-sm text-muted-foreground">Goluri</div>
+          </Card>
+          <Card className="p-4">
+            <div className="text-2xl font-bold text-primary">{player.stats.assists}</div>
+            <div className="text-sm text-muted-foreground">Assisturi</div>
+          </Card>
+          <Card className="p-4">
+            <div className="text-2xl font-bold text-primary">{player.stats.matchesPlayed}</div>
+            <div className="text-sm text-muted-foreground">Meciuri</div>
+          </Card>
+          <Card className="p-4">
+            <div className="text-2xl font-bold text-primary">{Math.round(player.stats.minutesPlayed / 60)}</div>
+            <div className="text-sm text-muted-foreground">Ore jucate</div>
+          </Card>
+          {isGoalkeeper && player.stats.cleanSheets !== undefined && (
+            <Card className="p-4 col-span-2">
+              <div className="text-2xl font-bold text-primary">{player.stats.cleanSheets}</div>
+              <div className="text-sm text-muted-foreground">Meciuri fără gol primit</div>
+            </Card>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Achievements */}
+      {unlockedAchievements.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <h3 className="mb-3 flex items-center gap-2">
+            <Award className="w-5 h-5" />
+            Realizări ({unlockedAchievements.length}/{achievements.length})
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            {achievements.map((achievement) => {
+              const Icon = achievement.icon;
+              return (
+                <Card
+                  key={achievement.id}
+                  className={`p-4 ${
+                    achievement.unlocked
+                      ? 'bg-primary/5 border-primary/20'
+                      : 'opacity-50 grayscale'
+                  }`}
+                >
+                  <Icon className={`w-8 h-8 mb-2 ${achievement.unlocked ? achievement.color : 'text-muted-foreground'}`} />
+                  <div className="text-sm font-medium">{achievement.title}</div>
+                  <div className="text-xs text-muted-foreground">{achievement.description}</div>
+                </Card>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Attendance */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <h3 className="mb-3 flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5" />
+          Prezența ta
+        </h3>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted-foreground">Rata de prezență</span>
+            <span className="text-2xl font-bold text-primary">{attendanceRate}%</span>
+          </div>
+          <div className="w-full bg-secondary rounded-full h-2">
+            <div
+              className="bg-primary h-2 rounded-full transition-all"
+              style={{ width: `${attendanceRate}%` }}
+            />
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">
+            {presentCount} din {playerAttendance.length} evenimente
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Upcoming Events */}
+      {upcomingEvents.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <h3 className="mb-3 flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Următoarele evenimente
+          </h3>
+          <div className="space-y-3">
+            {upcomingEvents.map((event, index) => (
+              <Card key={event.id} className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1">
+                    <div className="font-medium mb-1">{event.title}</div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {formatDate(event.date)}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                      <Clock className="w-4 h-4" />
+                      {event.startTime} ({event.duration} min)
+                    </div>
+                  </div>
+                  <Badge variant={event.type === 'match' ? 'default' : 'secondary'}>
+                    {getEventTypeLabel(event.type)}
+                  </Badge>
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
+                  <MapPin className="w-3 h-3" />
+                  {event.location}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Recent Matches */}
+      {recentMatches.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <h3 className="mb-3 flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            Meciuri recente
+          </h3>
+          <div className="space-y-3">
+            {recentMatches.map((match) => {
+              const matchDetails = match.matchDetails!;
+              const playerScored = matchDetails.goalScorers?.some(g => g.playerId === player.id);
+              const playerAssisted = matchDetails.goalScorers?.some(g => g.assistedBy === player.id);
+              
+              return (
+                <Card key={match.id} className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="font-medium mb-1">{matchDetails.opponent}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDate(match.date)}
+                      </div>
+                    </div>
+                    {getResultBadge(matchDetails.result)}
+                  </div>
+                  {matchDetails.score && (
+                    <div className="text-2xl font-bold mb-2">
+                      {matchDetails.score.team} - {matchDetails.score.opponent}
+                    </div>
+                  )}
+                  {(playerScored || playerAssisted) && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {playerScored && (
+                        <Badge variant="secondary" className="text-xs">
+                          ⚽ Ai marcat!
+                        </Badge>
+                      )}
+                      {playerAssisted && (
+                        <Badge variant="secondary" className="text-xs">
+                          🎯 Ai dat assist!
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
 
-// ========== DIRECTOR DASHBOARD (Placeholder) ==========
-function DirectorDashboard() {
+// ========== DIRECTOR DASHBOARD ==========
+function DirectorDashboard({ onNavigate }: DashboardProps) {
+  const { currentUser } = useAuth();
+  const club = currentUser ? clubs.find(c => c.id === currentUser.clubId) : null;
+  const clubTeams = club ? getTeamsByClubId(club.id) : [];
+  const allClubPlayers = club ? getPlayersByClubId(club.id) : [];
+  const allClubEvents = club ? getEventsByClubId(club.id) : [];
+  const allCoaches = club ? getCoachesByClubId(club.id) : [];
+
+  // Get today's date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Calculate club-wide metrics
+  const totalPlayers = allClubPlayers.length;
+  const totalCoaches = allCoaches.length;
+  const totalTeams = clubTeams.length;
+
+  // Calculate club-wide attendance
+  const allAttendanceRecords = allClubEvents.flatMap(e => e.attendance);
+  const presentCount = allAttendanceRecords.filter(a => a.status === 'present' || a.status === 'late').length;
+  const clubAttendanceRate = allAttendanceRecords.length > 0
+    ? Math.round((presentCount / allAttendanceRecords.length) * 100)
+    : 0;
+
+  // Calculate club-wide performance
+  const allMatches = allClubEvents.filter(e => 
+    e.type === 'match' && 
+    new Date(e.date) < new Date() && 
+    e.matchDetails?.result
+  );
+  const totalWins = allMatches.filter(e => e.matchDetails?.result === 'win').length;
+  const totalDraws = allMatches.filter(e => e.matchDetails?.result === 'draw').length;
+  const totalLosses = allMatches.filter(e => e.matchDetails?.result === 'loss').length;
+  const totalMatchesPlayed = allMatches.length;
+
+  const clubGoalsScored = allMatches.reduce((sum, e) => sum + (e.matchDetails?.score?.team || 0), 0);
+  const clubGoalsConceded = allMatches.reduce((sum, e) => sum + (e.matchDetails?.score?.opponent || 0), 0);
+
+  // Upcoming events (next 3)
+  const upcomingEvents = allClubEvents
+    .filter(e => {
+      const eventDate = new Date(e.date);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() >= today.getTime();
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 3);
+
+  // Team performance summary
+  const teamPerformance = clubTeams.map(team => {
+    const teamEvents = allClubEvents.filter(e => e.teamId === team.id);
+    const teamMatches = teamEvents.filter(e => 
+      e.type === 'match' && 
+      new Date(e.date) < new Date() && 
+      e.matchDetails?.result
+    );
+    const wins = teamMatches.filter(e => e.matchDetails?.result === 'win').length;
+    const draws = teamMatches.filter(e => e.matchDetails?.result === 'draw').length;
+    const losses = teamMatches.filter(e => e.matchDetails?.result === 'loss').length;
+    const coach = getUserById(team.coachId);
+    
+    return {
+      team,
+      coach,
+      wins,
+      draws,
+      losses,
+      totalMatches: teamMatches.length,
+    };
+  }).sort((a, b) => b.wins - a.wins);
+
+  const stats = [
+    {
+      label: 'Echipe',
+      value: totalTeams,
+      icon: Users,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
+      label: 'Jucători',
+      value: totalPlayers,
+      icon: User,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    {
+      label: 'Antrenori',
+      value: totalCoaches,
+      icon: Trophy,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
+  ];
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    today.setHours(0, 0, 0, 0);
+    tomorrow.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    if (date.getTime() === today.getTime()) return 'Astăzi';
+    if (date.getTime() === tomorrow.getTime()) return 'Mâine';
+
+    const days = ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm'];
+    const months = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]}`;
+  };
 
   return (
     <div className="space-y-6 pb-20">
-      <div>
-        <h1>Dashboard Director</h1>
-        <p className="text-muted-foreground">
-          Privire de ansamblu asupra clubului
-        </p>
+      {/* Header */}
+      <motion.div
+        className="flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div>
+          <motion.h1
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {club?.name}
+          </motion.h1>
+          <motion.p
+            className="text-muted-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Bine ai revenit, {currentUser?.name?.split(' ')[0]}!
+          </motion.p>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="w-5 h-5" />
+            <motion.span
+              className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </Button>
+        </motion.div>
+      </motion.div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.1 + index * 0.1,
+                ease: [0.22, 1, 0.36, 1]
+              }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Card className="p-3 transition-shadow hover:shadow-lg">
+                <motion.div
+                  className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mx-auto mb-2`}
+                  whileHover={{ rotate: [0, -10, 10, -10, 0], transition: { duration: 0.5 } }}
+                >
+                  <Icon className={`w-5 h-5 ${stat.color}`} />
+                </motion.div>
+                <div className="text-xl font-semibold text-center">{stat.value}</div>
+                <div className="text-xs text-muted-foreground text-center">{stat.label}</div>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
-      <Card className="p-6 text-center">
-        <Activity className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-        <p className="text-muted-foreground">
-          Dashboard pentru director în dezvoltare...
-        </p>
-      </Card>
+      {/* Club Performance Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <h3 className="mb-3">Performanță club</h3>
+        <Card className="p-4">
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">{clubAttendanceRate}%</div>
+              <div className="text-xs text-muted-foreground">Rata de prezență</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">{totalMatchesPlayed}</div>
+              <div className="text-xs text-muted-foreground">Meciuri jucate</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{totalWins}</div>
+              <div className="text-xs text-muted-foreground">Victorii</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{totalDraws}</div>
+              <div className="text-xs text-muted-foreground">Egaluri</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{totalLosses}</div>
+              <div className="text-xs text-muted-foreground">Înfrângeri</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 pt-3 mt-3 border-t border-border">
+            <div className="text-center">
+              <div className="text-lg font-semibold">{clubGoalsScored}</div>
+              <div className="text-xs text-muted-foreground">Goluri marcate</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold">{clubGoalsConceded}</div>
+              <div className="text-xs text-muted-foreground">Goluri primite</div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Teams Performance */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3>Echipe</h3>
+          <Button variant="ghost" size="sm" onClick={() => onNavigate?.('teams')}>
+            Vezi toate
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {teamPerformance.slice(0, 3).map((item, index) => (
+            <motion.div
+              key={item.team.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Card className="p-3 cursor-pointer hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Trophy className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-medium">{item.team.name}</div>
+                      <div className="text-xs text-muted-foreground">{item.coach?.name}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold">
+                      {item.wins}V {item.draws}E {item.losses}Î
+                    </div>
+                    <div className="text-xs text-muted-foreground">{item.totalMatches} meciuri</div>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Upcoming Events */}
+      {upcomingEvents.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+        >
+          <h3 className="mb-3">Evenimente apropiate</h3>
+          <div className="space-y-2">
+            {upcomingEvents.map((event, index) => {
+              const team = getTeamById(event.teamId);
+              return (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
+                >
+                  <Card className="p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant={event.type === 'match' ? 'default' : 'secondary'} className="text-xs">
+                            {event.type === 'match' ? 'Meci' : 'Antrenament'}
+                          </Badge>
+                          <span className="text-xs font-medium text-muted-foreground">{team?.name}</span>
+                        </div>
+                        <div className="text-sm font-medium truncate">{event.title}</div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDate(event.date)} • {event.startTime}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.9 }}
+      >
+        <h3 className="mb-3">Acțiuni rapide</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button
+              variant="default"
+              className="h-16 w-full flex flex-col items-center justify-center gap-1"
+              onClick={() => onNavigate?.('teams')}
+            >
+              <Users className="w-5 h-5" />
+              <span className="text-sm">Echipe</span>
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button
+              variant="default"
+              className="h-16 w-full flex flex-col items-center justify-center gap-1"
+              onClick={() => onNavigate?.('coaches')}
+            >
+              <User className="w-5 h-5" />
+              <span className="text-sm">Antrenori</span>
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button
+              variant="default"
+              className="h-16 w-full flex flex-col items-center justify-center gap-1"
+              onClick={() => onNavigate?.('analytics')}
+            >
+              <Activity className="w-5 h-5" />
+              <span className="text-sm">Analiză</span>
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button
+              variant="default"
+              className="h-16 w-full flex flex-col items-center justify-center gap-1"
+              onClick={() => onNavigate?.('announcements')}
+            >
+              <Bell className="w-5 h-5" />
+              <span className="text-sm">Anunțuri</span>
+            </Button>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 }

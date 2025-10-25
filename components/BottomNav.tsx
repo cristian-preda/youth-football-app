@@ -1,4 +1,4 @@
-import { Home, Calendar, Users, MessageSquare, Trophy, User, Baby } from 'lucide-react';
+import { Home, Calendar, Users, MessageSquare, Trophy, User, Baby, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -24,7 +24,16 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     { id: 'profile', label: 'Profil', icon: User, requiresAuth: true },
   ];
 
-  // Default authenticated tabs (for coach, director, player)
+  // Director-specific tabs
+  const directorTabs = [
+    { id: 'team', label: 'Dashboard', icon: Activity, requiresAuth: true },
+    { id: 'teams', label: 'Echipe', icon: Users, requiresAuth: true },
+    { id: 'schedule', label: 'Program', icon: Calendar, requiresAuth: true },
+    { id: 'analytics', label: 'Analiză', icon: Trophy, requiresAuth: true },
+    { id: 'profile', label: 'Profil', icon: User, requiresAuth: true },
+  ];
+
+  // Default authenticated tabs (for coach, player)
   const defaultAuthTabs = [
     { id: 'schedule', label: 'Program', icon: Calendar, requiresAuth: true },
     { id: 'team', label: 'Echipa', icon: Users, requiresAuth: true },
@@ -37,6 +46,8 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const authTabs = currentUser
     ? currentUser.role === 'parent'
       ? parentTabs
+      : currentUser.role === 'director'
+      ? directorTabs
       : defaultAuthTabs
     : [];
 

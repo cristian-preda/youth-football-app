@@ -236,6 +236,47 @@ export interface AttendanceConfirmationStatus {
   notes?: string;
 }
 
+// Director-Specific Types
+export interface ClubAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  createdBy: string; // User ID (Director)
+  clubId: string;
+  targetAudience: 'all' | 'coaches' | 'parents' | 'players'; // Who should see it
+  pinned: boolean;
+  createdAt: string;
+  readBy: string[]; // User IDs who have read it
+}
+
+export interface CoachPerformanceMetrics {
+  coachId: string;
+  teamId: string;
+  totalMatches: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  winRate: number;
+  averageAttendanceRate: number;
+  goalsScored: number;
+  goalsConceded: number;
+  lastUpdated: string;
+}
+
+export interface FacilityBooking {
+  id: string;
+  facilityName: string; // e.g., "Teren 1", "Teren 2"
+  clubId: string;
+  teamId?: string; // Which team is using it
+  eventId?: string; // Linked event if applicable
+  date: string;
+  startTime: string;
+  duration: number; // minutes
+  bookedBy: string; // User ID
+  purpose: 'training' | 'match' | 'maintenance' | 'other';
+  notes?: string;
+}
+
 // UI State Types
 export interface DashboardData {
   user: User;

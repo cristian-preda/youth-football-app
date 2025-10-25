@@ -12,6 +12,11 @@ import { Profile } from './components/Profile';
 import { PlayerRoster } from './components/PlayerRoster';
 import { Onboarding } from './components/Onboarding';
 import { MyKid } from './components/MyKid';
+import { TeamsOverview } from './components/TeamsOverview';
+import { CoachesManagement } from './components/CoachesManagement';
+import { Analytics } from './components/Analytics';
+import { ClubAnnouncements } from './components/ClubAnnouncements';
+import { Facilities } from './components/Facilities';
 import { users } from './data/mockData';
 import type { UserRole } from './types';
 
@@ -75,6 +80,17 @@ function AppContent() {
         return currentUser ? <Attendance /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       case 'players':
         return currentUser ? <PlayerRoster initialPlayerId={selectedPlayerId || undefined} /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
+      // Director-specific routes
+      case 'teams':
+        return currentUser ? <TeamsOverview /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
+      case 'coaches':
+        return currentUser ? <CoachesManagement /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
+      case 'analytics':
+        return currentUser ? <Analytics /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
+      case 'announcements':
+        return currentUser ? <ClubAnnouncements /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
+      case 'facilities':
+        return currentUser ? <Facilities /> : <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
       default:
         return <NewsFeed onNavigate={handleNavigate} onRequestLogin={() => setShowOnboarding(true)} />;
     }

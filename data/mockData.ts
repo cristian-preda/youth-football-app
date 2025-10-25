@@ -6,6 +6,8 @@ import type {
   Event,
   Message,
   Chat,
+  ClubAnnouncement,
+  FacilityBooking,
 } from '../types';
 
 // ========== CLUBS ==========
@@ -16,7 +18,7 @@ export const clubs: Club[] = [
     location: 'Baza Sportivă Steaua',
     city: 'București',
     founded: 1947,
-    teams: ['team-1', 'team-2', 'team-3'],
+    teams: ['team-1', 'team-2', 'team-3', 'team-4', 'team-5'],
     directorId: 'user-director-1',
   },
 ];
@@ -46,9 +48,27 @@ export const teams: Team[] = [
     name: 'U13 Fete',
     ageGroup: 'U13',
     clubId: 'club-1',
-    coachId: 'user-coach-1',
-    playerIds: [],
+    coachId: 'user-coach-3',
+    playerIds: ['player-11', 'player-12'],
     gender: 'girls',
+  },
+  {
+    id: 'team-4',
+    name: 'U7',
+    ageGroup: 'U7',
+    clubId: 'club-1',
+    coachId: 'user-coach-4',
+    playerIds: ['player-13', 'player-14', 'player-15'],
+    gender: 'boys',
+  },
+  {
+    id: 'team-5',
+    name: 'U15',
+    ageGroup: 'U15',
+    clubId: 'club-1',
+    coachId: 'user-coach-2',
+    playerIds: [],
+    gender: 'boys',
   },
 ];
 
@@ -81,6 +101,24 @@ export const users: User[] = [
     role: 'coach',
     clubId: 'club-1',
     teamId: 'team-2',
+  },
+  {
+    id: 'user-coach-3',
+    name: 'Cristina Munteanu',
+    email: 'cristina.munteanu@steaua-academy.ro',
+    phone: '+40 724 567 890',
+    role: 'coach',
+    clubId: 'club-1',
+    teamId: 'team-3',
+  },
+  {
+    id: 'user-coach-4',
+    name: 'Radu Stanciu',
+    email: 'radu.stanciu@steaua-academy.ro',
+    phone: '+40 725 678 901',
+    role: 'coach',
+    clubId: 'club-1',
+    teamId: 'team-4',
   },
   // Parents
   {
@@ -142,6 +180,15 @@ export const users: User[] = [
     id: 'player-2',
     name: 'Andrei Dumitrescu Jr.',
     email: '',
+    phone: '',
+    role: 'player',
+    clubId: 'club-1',
+    teamId: 'team-1',
+  },
+  {
+    id: 'player-5',
+    name: 'Ștefan Munteanu',
+    email: 'stefan.munteanu@elev.ro',
     phone: '',
     role: 'player',
     clubId: 'club-1',
@@ -319,6 +366,150 @@ export const players: Player[] = [
       minutesPlayed: 500,
       matchesPlayed: 7,
       yellowCards: 1,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  // Team 2 (U11) Players
+  {
+    id: 'player-9',
+    name: 'Mihai Popescu',
+    age: 11,
+    dateOfBirth: '2013-03-10',
+    position: 'Atacant',
+    teamId: 'team-2',
+    clubId: 'club-1',
+    jerseyNumber: 10,
+    parentIds: [],
+    stats: {
+      goals: 18,
+      assists: 9,
+      minutesPlayed: 640,
+      matchesPlayed: 8,
+      yellowCards: 0,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-10',
+    name: 'Vlad Ionescu',
+    age: 10,
+    dateOfBirth: '2014-06-15',
+    position: 'Mijlocaș',
+    teamId: 'team-2',
+    clubId: 'club-1',
+    jerseyNumber: 7,
+    parentIds: [],
+    stats: {
+      goals: 7,
+      assists: 12,
+      minutesPlayed: 600,
+      matchesPlayed: 8,
+      yellowCards: 2,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  // Team 3 (U13 Fete) Players
+  {
+    id: 'player-11',
+    name: 'Ioana Marinescu',
+    age: 12,
+    dateOfBirth: '2012-09-20',
+    position: 'Mijlocaș',
+    teamId: 'team-3',
+    clubId: 'club-1',
+    jerseyNumber: 8,
+    parentIds: [],
+    stats: {
+      goals: 10,
+      assists: 14,
+      minutesPlayed: 560,
+      matchesPlayed: 7,
+      yellowCards: 1,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-12',
+    name: 'Andreea Popa',
+    age: 13,
+    dateOfBirth: '2011-11-05',
+    position: 'Atacant',
+    teamId: 'team-3',
+    clubId: 'club-1',
+    jerseyNumber: 9,
+    parentIds: [],
+    stats: {
+      goals: 22,
+      assists: 6,
+      minutesPlayed: 600,
+      matchesPlayed: 7,
+      yellowCards: 0,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  // Team 4 (U7) Players
+  {
+    id: 'player-13',
+    name: 'Andrei Vasilescu',
+    age: 7,
+    dateOfBirth: '2017-04-12',
+    position: 'Atacant',
+    teamId: 'team-4',
+    clubId: 'club-1',
+    jerseyNumber: 10,
+    parentIds: [],
+    stats: {
+      goals: 8,
+      assists: 3,
+      minutesPlayed: 300,
+      matchesPlayed: 5,
+      yellowCards: 0,
+      redCards: 0,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-14',
+    name: 'Nicolae Gheorghe',
+    age: 7,
+    dateOfBirth: '2017-07-22',
+    position: 'Portar',
+    teamId: 'team-4',
+    clubId: 'club-1',
+    jerseyNumber: 1,
+    parentIds: [],
+    stats: {
+      goals: 0,
+      assists: 0,
+      minutesPlayed: 400,
+      matchesPlayed: 5,
+      yellowCards: 0,
+      redCards: 0,
+      cleanSheets: 2,
+    },
+    medicalHistory: [],
+  },
+  {
+    id: 'player-15',
+    name: 'Cristian Tudor',
+    age: 6,
+    dateOfBirth: '2018-02-15',
+    position: 'Fundaș',
+    teamId: 'team-4',
+    clubId: 'club-1',
+    jerseyNumber: 3,
+    parentIds: [],
+    stats: {
+      goals: 1,
+      assists: 2,
+      minutesPlayed: 350,
+      matchesPlayed: 5,
+      yellowCards: 0,
       redCards: 0,
     },
     medicalHistory: [],
@@ -944,6 +1135,96 @@ export const messages: Message[] = [
   },
 ];
 
+// ========== CLUB ANNOUNCEMENTS ==========
+export const clubAnnouncements: ClubAnnouncement[] = [
+  {
+    id: 'announcement-1',
+    title: 'Anunț important: Schimbare program antrenamente',
+    content: 'Începând cu data de 1 noiembrie, programul antrenamentelor se va modifica. Toate echipele vor antrena cu 30 minute mai devreme.',
+    createdBy: 'user-director-1',
+    clubId: 'club-1',
+    targetAudience: 'all',
+    pinned: true,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    readBy: ['user-coach-1', 'user-coach-2', 'user-parent-1'],
+  },
+  {
+    id: 'announcement-2',
+    title: 'Turneu intern 15 noiembrie',
+    content: 'Vom organiza un turneu intern între toate echipele clubului. Participarea este obligatorie pentru toate echipele.',
+    createdBy: 'user-director-1',
+    clubId: 'club-1',
+    targetAudience: 'coaches',
+    pinned: false,
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    readBy: ['user-coach-1', 'user-coach-2', 'user-coach-3'],
+  },
+  {
+    id: 'announcement-3',
+    title: 'Evaluări medicale pentru toți jucătorii',
+    content: 'Părinții sunt rugați să programeze evaluări medicale pentru copiii lor. Termenul limită este 30 noiembrie.',
+    createdBy: 'user-director-1',
+    clubId: 'club-1',
+    targetAudience: 'parents',
+    pinned: true,
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    readBy: [],
+  },
+];
+
+// ========== FACILITY BOOKINGS ==========
+const todayBooking = new Date();
+const tomorrowBooking = new Date(todayBooking);
+tomorrowBooking.setDate(tomorrowBooking.getDate() + 1);
+
+export const facilityBookings: FacilityBooking[] = [
+  {
+    id: 'booking-1',
+    facilityName: 'Teren 1',
+    clubId: 'club-1',
+    teamId: 'team-1',
+    eventId: 'event-1',
+    date: todayBooking.toISOString().split('T')[0],
+    startTime: '16:00',
+    duration: 90,
+    bookedBy: 'user-coach-1',
+    purpose: 'training',
+  },
+  {
+    id: 'booking-2',
+    facilityName: 'Teren 2',
+    clubId: 'club-1',
+    teamId: 'team-2',
+    date: todayBooking.toISOString().split('T')[0],
+    startTime: '17:30',
+    duration: 90,
+    bookedBy: 'user-coach-2',
+    purpose: 'training',
+  },
+  {
+    id: 'booking-3',
+    facilityName: 'Teren 1',
+    clubId: 'club-1',
+    teamId: 'team-1',
+    date: tomorrowBooking.toISOString().split('T')[0],
+    startTime: '10:00',
+    duration: 60,
+    bookedBy: 'user-coach-1',
+    purpose: 'match',
+  },
+  {
+    id: 'booking-4',
+    facilityName: 'Teren 1',
+    clubId: 'club-1',
+    date: tomorrowBooking.toISOString().split('T')[0],
+    startTime: '08:00',
+    duration: 120,
+    bookedBy: 'user-director-1',
+    purpose: 'maintenance',
+    notes: 'Întreținere teren - tuns gazon',
+  },
+];
+
 // Helper functions to get data by ID
 export const getUserById = (id: string): User | undefined => users.find(u => u.id === id);
 export const getClubById = (id: string): Club | undefined => clubs.find(c => c.id === id);
@@ -956,9 +1237,14 @@ export const getChatById = (id: string): Chat | undefined => chats.find(c => c.i
 export const getTeamsByClubId = (clubId: string): Team[] => teams.filter(t => t.clubId === clubId);
 export const getPlayersByTeamId = (teamId: string): Player[] => players.filter(p => p.teamId === teamId);
 export const getEventsByTeamId = (teamId: string): Event[] => events.filter(e => e.teamId === teamId);
+export const getEventsByClubId = (clubId: string): Event[] => events.filter(e => e.clubId === clubId);
+export const getPlayersByClubId = (clubId: string): Player[] => players.filter(p => p.clubId === clubId);
+export const getCoachesByClubId = (clubId: string): User[] => users.filter(u => u.role === 'coach' && u.clubId === clubId);
 export const getMessagesByChatId = (chatId: string): Message[] => messages.filter(m => m.chatId === chatId);
 export const getChildrenByParentId = (parentId: string): Player[] => {
   const user = getUserById(parentId);
   if (!user || !user.childrenIds) return [];
   return players.filter(p => user.childrenIds?.includes(p.id));
 };
+export const getAnnouncementsByClubId = (clubId: string): ClubAnnouncement[] => clubAnnouncements.filter(a => a.clubId === clubId);
+export const getFacilityBookingsByClubId = (clubId: string): FacilityBooking[] => facilityBookings.filter(b => b.clubId === clubId);
