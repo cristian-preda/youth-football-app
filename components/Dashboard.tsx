@@ -1,5 +1,6 @@
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface DashboardProps {
   onNavigate?: (tab: string, playerId?: string) => void;
@@ -20,7 +21,11 @@ import {
   Trophy,
   Target,
   Activity,
-  Award
+  Award,
+  ChevronRight,
+  ChevronLeft,
+  Heart,
+  Shield
 } from 'lucide-react';
 import {
   getTeamById,
@@ -718,10 +723,403 @@ function ParentDashboard() {
   );
 }
 
+// ========== PLAYER DETAILED VIEW ==========
+interface PlayerDetailedViewProps {
+  player: any;
+  team: any;
+  coach: any;
+  teamEvents: any[];
+  recentMatches: any[];
+  onBack: () => void;
+}
+
+function PlayerDetailedView({ player, team, coach, teamEvents, recentMatches, onBack }: PlayerDetailedViewProps) {
+  const [activeStatView, setActiveStatView] = useState<string | null>(null);
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const days = ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm'];
+    const months = ['Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]}`;
+  };
+
+  const getResultBadge = (result?: string) => {
+    switch (result) {
+      case 'win':
+        return <Badge className="bg-green-600 text-white">Victorie</Badge>;
+      case 'draw':
+        return <Badge variant="secondary">Egal</Badge>;
+      case 'loss':
+        return <Badge variant="destructive">Înfrângere</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  // Calculate detailed stats per match with MOCK DATA for prototype
+  const matchesWithPlayerStats = recentMatches.map((match, index) => {
+    const matchDetails = match.matchDetails;
+    const playerMatchStats = matchDetails?.playerStats?.find(ps => ps.playerId === player.id);
+    
+    // MOCK DATA FOR PROTOTYPE - distribute the player's total stats across recent matches
+    const mockDistribution = [
+      { goals: 2, assists: 2, minutes: 60, yellowCards: 1, redCards: 0 }, // Match 1
+      { goals: 2, assists: 2, minutes: 60, yellowCards: 0, redCards: 0 }, // Match 2
+      { goals: 1, assists: 1, minutes: 60, yellowCards: 0, redCards: 0 }, // Match 3
+    ];
+    
+    const mockData = mockDistribution[index] || { goals: 0, assists: 0, minutes: 60, yellowCards: 0, redCards: 0 };
+    
+    // Use actual playerStats if available, otherwise use mock data
+    const playerScored = playerMatchStats?.goals ?? mockData.goals;
+    const playerAssisted = playerMatchStats?.assists ?? mockData.assists;
+    const playerYellowCards = playerMatchStats?.yellowCards ?? mockData.yellowCards;
+    const playerRedCards = playerMatchStats?.redCards ?? mockData.redCards;
+    const minutesPlayed = playerMatchStats?.minutesPlayed ?? mockData.minutes;
+    
+    return {
+      match,
+      playerScored,
+      playerAssisted,
+      playerYellowCards,
+      playerRedCards,
+      minutesPlayed,
+    };
+  });
+
+  return (
+    <div className="space-y-6 pb-20">
+      {/* Header with Back Button */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Button 
+          variant="ghost" 
+          onClick={onBack}
+          className="mb-4 -ml-2"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Înapoi
+        </Button>
+        <h1>Statistici detaliate</h1>
+        <p className="text-muted-foreground">Profilul complet al lui {player.name}</p>
+      </motion.div>
+
+      {/* Player Profile Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <Card className="p-6">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="text-2xl font-bold text-primary">#{player.jerseyNumber}</div>
+            </div>
+            <div className="flex-1">
+              <h2 className="mb-1">{player.name}</h2>
+              <div className="flex flex-wrap gap-2 mb-2">
+                <Badge variant="secondary">{player.age} ani</Badge>
+                <Badge variant="secondary">#{player.jerseyNumber}</Badge>
+                <Badge variant="outline">{player.position}</Badge>
+              </div>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <div>Echipa: {team?.name}</div>
+                <div>Antrenor: {coach?.name}</div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Quick Stats Grid - Clickable */}
+      <div className="grid grid-cols-2 gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveStatView(activeStatView === 'goals' ? null : 'goals')}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{player.stats.goals}</div>
+                <div className="text-xs text-muted-foreground">Goluri</div>
+              </div>
+            </div>
+            <div className="text-xs mt-2 text-muted-foreground">
+              {activeStatView === 'goals' ? 'Apasă pentru a ascunde ↑' : 'Apasă pentru detalii →'}
+            </div>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveStatView(activeStatView === 'assists' ? null : 'assists')}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                <Target className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{player.stats.assists}</div>
+                <div className="text-xs text-muted-foreground">Pase decisive</div>
+              </div>
+            </div>
+            <div className="text-xs mt-2 text-muted-foreground">
+              {activeStatView === 'assists' ? 'Apasă pentru a ascunde ↑' : 'Apasă pentru detalii →'}
+            </div>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveStatView(activeStatView === 'minutes' ? null : 'minutes')}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{player.stats.minutesPlayed}</div>
+                <div className="text-xs text-muted-foreground">Minute</div>
+              </div>
+            </div>
+            <div className="text-xs mt-2 text-muted-foreground">
+              {activeStatView === 'minutes' ? 'Apasă pentru a ascunde ↑' : 'Apasă pentru detalii →'}
+            </div>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveStatView(activeStatView === 'cards' ? null : 'cards')}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
+                <Award className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold">{player.stats.yellowCards + player.stats.redCards}</div>
+                <div className="text-xs text-muted-foreground">Cartonașe</div>
+              </div>
+            </div>
+            <div className="text-xs mt-2 text-muted-foreground">
+              {activeStatView === 'cards' ? 'Apasă pentru a ascunde ↑' : 'Apasă pentru detalii →'}
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Detailed Stats View - Per Match Breakdown */}
+      {activeStatView && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card className="p-4">
+            <h3 className="mb-3 font-semibold">
+              {activeStatView === 'goals' && 'Goluri pe meciuri'}
+              {activeStatView === 'assists' && 'Pase decisive pe meciuri'}
+              {activeStatView === 'minutes' && 'Minute jucate pe meci'}
+              {activeStatView === 'cards' && 'Cartonașe pe meciuri'}
+            </h3>
+            <div className="space-y-2">
+              {matchesWithPlayerStats.length > 0 ? (
+                matchesWithPlayerStats.map(({ match, playerScored, playerAssisted, playerYellowCards, playerRedCards, minutesPlayed }) => {
+                  return (
+                    <div key={match.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
+                      <div className="flex-1">
+                        <div className="font-medium">{match.matchDetails?.opponent}</div>
+                        <div className="text-xs text-muted-foreground">{formatDate(match.date)}</div>
+                      </div>
+                      <div className="text-right">
+                        {activeStatView === 'goals' && (
+                          <span className={`font-semibold ${playerScored > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            {playerScored > 0 ? `${playerScored} gol${playerScored !== 1 ? 'uri' : ''}` : '-'}
+                          </span>
+                        )}
+                        {activeStatView === 'assists' && (
+                          <span className={`font-semibold ${playerAssisted > 0 ? 'text-blue-600' : 'text-muted-foreground'}`}>
+                            {playerAssisted > 0 ? `${playerAssisted} pas${playerAssisted !== 1 ? 'e' : 'ă'}` : '-'}
+                          </span>
+                        )}
+                        {activeStatView === 'minutes' && (
+                          <span className={`font-semibold ${minutesPlayed > 0 ? 'text-orange-600' : 'text-muted-foreground'}`}>
+                            {minutesPlayed > 0 ? `${minutesPlayed} min` : '-'}
+                          </span>
+                        )}
+                        {activeStatView === 'cards' && (
+                          <div className="flex items-center gap-2 justify-end">
+                            {playerYellowCards > 0 || playerRedCards > 0 ? (
+                              <>
+                                {playerYellowCards > 0 && (
+                                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                                    {playerYellowCards} 🟨
+                                  </Badge>
+                                )}
+                                {playerRedCards > 0 && (
+                                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
+                                    {playerRedCards} 🟥
+                                  </Badge>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-4 text-sm text-muted-foreground">
+                  Nu există meciuri recente
+                </div>
+              )}
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Medical History */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <h3 className="mb-3">Istoric medical</h3>
+        <Card className="p-4">
+          {player.medicalHistory && player.medicalHistory.length > 0 ? (
+            <div className="space-y-3">
+              {player.medicalHistory.map((record: any) => (
+                <div key={record.id} className="border-b border-border last:border-0 pb-3 last:pb-0">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Heart className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{record.description}</span>
+                        {record.severity && (
+                          <Badge
+                            variant={
+                              record.severity === 'high'
+                                ? 'destructive'
+                                : record.severity === 'medium'
+                                ? 'default'
+                                : 'secondary'
+                            }
+                          >
+                            {record.severity === 'high'
+                              ? 'Gravitate mare'
+                              : record.severity === 'medium'
+                              ? 'Gravitate medie'
+                              : 'Gravitate mică'}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <div>Data: {new Date(record.date).toLocaleDateString('ro-RO')}</div>
+                        {record.recoveryDate && (
+                          <div>
+                            Recuperare: {new Date(record.recoveryDate).toLocaleDateString('ro-RO')}
+                          </div>
+                        )}
+                        {record.notes && <div className="mt-1">{record.notes}</div>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <Heart className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Nu există înregistrări medicale
+              </p>
+            </div>
+          )}
+        </Card>
+      </motion.div>
+
+      {/* Team Recent Matches */}
+      {recentMatches.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <h3 className="mb-3">Meciuri recente ale echipei</h3>
+          <div className="space-y-3">
+            {recentMatches.map((match) => {
+              const matchDetails = match.matchDetails!;
+              
+              return (
+                <Card key={match.id} className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="font-medium mb-1">{matchDetails.opponent}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDate(match.date)}
+                      </div>
+                    </div>
+                    {getResultBadge(matchDetails.result)}
+                  </div>
+                  {matchDetails.score && (
+                    <div className="text-2xl font-bold mb-2">
+                      {matchDetails.score.team} - {matchDetails.score.opponent}
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 // ========== PLAYER DASHBOARD ==========
 function PlayerDashboard() {
   const { currentUser } = useAuth();
   const player = players.find(p => p.id === currentUser?.id);
+  const [showDetailedView, setShowDetailedView] = useState(false);
   
   if (!player) {
     return (
@@ -811,7 +1209,7 @@ function PlayerDashboard() {
     {
       id: 'team-player',
       title: 'Jucător de echipă!',
-      description: 'Ai dat assisturi',
+      description: 'Ai dat pase decisive',
       icon: Users,
       unlocked: player.stats.assists > 0,
       color: 'text-purple-600',
@@ -847,6 +1245,20 @@ function PlayerDashboard() {
 
   const isGoalkeeper = player.position === 'Portar';
 
+  // If detailed view is active, show it
+  if (showDetailedView) {
+    return (
+      <PlayerDetailedView 
+        player={player} 
+        team={team} 
+        coach={coach} 
+        teamEvents={teamEvents}
+        recentMatches={recentMatches}
+        onBack={() => setShowDetailedView(false)} 
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 pb-20">
       {/* Welcome Header */}
@@ -859,13 +1271,18 @@ function PlayerDashboard() {
         <p className="text-muted-foreground">Statisticile și progresul tău</p>
       </motion.div>
 
-      {/* Player Info Card */}
+      {/* Player Info Card - Clickable */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.1 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
-        <Card className="p-6">
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-md transition-shadow" 
+          onClick={() => setShowDetailedView(true)}
+        >
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
               <div className="text-2xl font-bold text-primary">#{player.jerseyNumber}</div>
@@ -877,6 +1294,7 @@ function PlayerDashboard() {
                 <Badge variant="outline">{player.position}</Badge>
               </div>
             </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </div>
           <div className="grid grid-cols-2 gap-2 pt-4 border-t">
             <div className="text-sm">
@@ -903,25 +1321,40 @@ function PlayerDashboard() {
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <Card className="p-4">
-            <div className="text-2xl font-bold text-primary">{player.stats.goals}</div>
-            <div className="text-sm text-muted-foreground">Goluri</div>
+            <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mx-auto mb-2">
+              <Trophy className="w-5 h-5 text-green-600" />
+            </div>
+            <div className="text-2xl font-bold text-center">{player.stats.goals}</div>
+            <div className="text-sm text-muted-foreground text-center">Goluri</div>
           </Card>
           <Card className="p-4">
-            <div className="text-2xl font-bold text-primary">{player.stats.assists}</div>
-            <div className="text-sm text-muted-foreground">Assisturi</div>
+            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mx-auto mb-2">
+              <Target className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="text-2xl font-bold text-center">{player.stats.assists}</div>
+            <div className="text-sm text-muted-foreground text-center">Pase decisive</div>
           </Card>
           <Card className="p-4">
-            <div className="text-2xl font-bold text-primary">{player.stats.matchesPlayed}</div>
-            <div className="text-sm text-muted-foreground">Meciuri</div>
+            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center mx-auto mb-2">
+              <Calendar className="w-5 h-5 text-purple-600" />
+            </div>
+            <div className="text-2xl font-bold text-center">{player.stats.matchesPlayed}</div>
+            <div className="text-sm text-muted-foreground text-center">Meciuri</div>
           </Card>
           <Card className="p-4">
-            <div className="text-2xl font-bold text-primary">{Math.round(player.stats.minutesPlayed / 60)}</div>
-            <div className="text-sm text-muted-foreground">Ore jucate</div>
+            <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center mx-auto mb-2">
+              <Clock className="w-5 h-5 text-orange-600" />
+            </div>
+            <div className="text-2xl font-bold text-center">{player.stats.minutesPlayed}</div>
+            <div className="text-sm text-muted-foreground text-center">Minute</div>
           </Card>
           {isGoalkeeper && player.stats.cleanSheets !== undefined && (
             <Card className="p-4 col-span-2">
-              <div className="text-2xl font-bold text-primary">{player.stats.cleanSheets}</div>
-              <div className="text-sm text-muted-foreground">Meciuri fără gol primit</div>
+              <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mx-auto mb-2">
+                <Shield className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="text-2xl font-bold text-center">{player.stats.cleanSheets}</div>
+              <div className="text-sm text-muted-foreground text-center">Meciuri fără gol primit</div>
             </Card>
           )}
         </div>
