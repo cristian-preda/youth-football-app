@@ -728,12 +728,11 @@ interface PlayerDetailedViewProps {
   player: any;
   team: any;
   coach: any;
-  teamEvents: any[];
   recentMatches: any[];
   onBack: () => void;
 }
 
-function PlayerDetailedView({ player, team, coach, teamEvents, recentMatches, onBack }: PlayerDetailedViewProps) {
+function PlayerDetailedView({ player, team, coach, recentMatches, onBack }: PlayerDetailedViewProps) {
   const [activeStatView, setActiveStatView] = useState<string | null>(null);
 
   const formatDate = (dateStr: string) => {
@@ -759,7 +758,7 @@ function PlayerDetailedView({ player, team, coach, teamEvents, recentMatches, on
   // Calculate detailed stats per match with MOCK DATA for prototype
   const matchesWithPlayerStats = recentMatches.map((match, index) => {
     const matchDetails = match.matchDetails;
-    const playerMatchStats = matchDetails?.playerStats?.find(ps => ps.playerId === player.id);
+    const playerMatchStats = matchDetails?.playerStats?.find((ps: any) => ps.playerId === player.id);
     
     // MOCK DATA FOR PROTOTYPE - distribute the player's total stats across recent matches
     const mockDistribution = [
@@ -1252,7 +1251,6 @@ function PlayerDashboard() {
         player={player} 
         team={team} 
         coach={coach} 
-        teamEvents={teamEvents}
         recentMatches={recentMatches}
         onBack={() => setShowDetailedView(false)} 
       />
